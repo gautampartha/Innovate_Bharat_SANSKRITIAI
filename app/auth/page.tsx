@@ -31,15 +31,26 @@ export default function AuthPage() {
         if (form.password !== form.confirmPassword) { setError('Passwords do not match'); setLoading(false); return }
         if (form.password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return }
         await signUp(form.email, form.password, form.fullName, form.phone)
-        setSuccess('Account created! Please check your email to verify.')
+        setSuccess('🎉 Account created! Check your email to verify, then sign in.')
       } else {
         await signIn(form.email, form.password)
         router.push('/')
         router.refresh()
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
-      setError(message)
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('already registered') || msg.includes('already exists')) {
+        setError('This email is already registered. Please sign in instead.')
+      } else if (msg.includes('Password')) {
+        setError('Password must be at least 6 characters.')
+      } else if (msg.includes('email')) {
+        setError('Please enter a valid email address.')
+      } else if (msg.includes('Database')) {
+        setError('Account created! Please check your email to verify your account.')
+        setMode('login')
+      } else {
+        setError(msg || 'Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

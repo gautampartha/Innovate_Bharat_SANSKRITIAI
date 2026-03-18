@@ -10,10 +10,40 @@ export async function signUp(
     email,
     password,
     options: {
-      data: { full_name: fullName, phone }
+      data: {
+        full_name: fullName,
+        phone: phone
+      }
     }
   })
   if (error) throw error
+
+  // Manually create profile as backup in case trigger fails
+  if (data.user) {
+    try {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: data.user.id,
+          email: email,
+          full_name: fullName,
+          phone: phone,
+          user_type: 'tourist',
+          language: 'en',
+          total_xp: 0,
+          monuments_visited: [],
+          quiz_scores: {},
+          chat_history: []
+        }, { onConflict: 'id' })
+      
+      if (profileError) {
+        console.warn('Profile creation warning:', profileError.message)
+      }
+    } catch {
+      // Silent — don't block signup for profile errors
+    }
+  }
+
   return data
 }
 
@@ -21,7 +51,35 @@ export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email, password
   })
-  if (error) throw error
+  if (error) {
+    if (error.message.includes('Email not confirmed')) {
+      throw new Error('Please check your email and confirm your account first.')
+    }
+    if (error.message.includes('Invalid login credentials')) {
+      throw new Error('Wrong email or password. Please try again.')
+    }
+    throw error
+  }
+
+  // Ensure profile exists on login
+  if (data.user) {
+    const existing = await getUserProfile(data.user.id)
+    if (!existing) {
+      await supabase.from('user_profiles').upsert({
+        id: data.user.id,
+        email: data.user.email,
+        full_name: data.user.user_metadata?.full_name || '',
+        phone: data.user.user_metadata?.phone || '',
+        user_type: 'tourist',
+        language: 'en',
+        total_xp: 0,
+        monuments_visited: [],
+        quiz_scores: {},
+        chat_history: []
+      }, { onConflict: 'id' })
+    }
+  }
+
   return data
 }
 

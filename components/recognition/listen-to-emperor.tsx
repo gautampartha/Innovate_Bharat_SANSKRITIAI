@@ -43,6 +43,7 @@ export function ListenToEmperor({ monumentName }: ListenToEmperorProps) {
         {t('historical_narration')} {monumentName}
       </div>
       <audio
+        key={`${slug}_${lang}`}
         controls
         style={{ width: '100%', height: '40px', borderRadius: '8px' }}
         preload="metadata"

@@ -35,20 +35,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    let mounted = true
+
+    // Timeout — if Supabase hangs, stop loading after 5 seconds
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('Auth session check timed out — continuing without auth')
+        setLoading(false)
+      }
+    }, 5000)
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
       setUser(session?.user ?? null)
       if (session?.user) {
-        getUserProfile(session.user.id).then(setProfile)
+        getUserProfile(session.user.id).then(p => {
+          if (mounted) setProfile(p)
+        }).catch(() => {})
       }
       setLoading(false)
+    }).catch((err) => {
+      console.warn('Auth session error:', err)
+      if (mounted) setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return
         setUser(session?.user ?? null)
         if (session?.user) {
-          const p = await getUserProfile(session.user.id)
-          setProfile(p)
+          try {
+            const p = await getUserProfile(session.user.id)
+            if (mounted) setProfile(p)
+          } catch {
+            // silent
+          }
         } else {
           setProfile(null)
         }
@@ -56,7 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -4,7 +4,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://heritageai-backend.onren
 
 export const apiClient = axios.create({
   baseURL: API,
-  timeout: 15000,
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' }
 })
 

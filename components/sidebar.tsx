@@ -19,8 +19,7 @@ const navItems = [
   { href: "/quiz", icon: HelpCircle, label: "Quiz" },
   { href: "/hunt", icon: Search, label: "Treasure Hunt" },
   { href: "/itinerary", icon: MapPin, label: "Itinerary" },
-  { href: "/leaderboard", icon: Crown, label: "Leaderboard" },
-  { href: "/badges", icon: Trophy, label: "Achievements" },
+  { href: "/achievements", icon: Trophy, label: "Achievements" },
   { href: "/festivals", icon: Calendar, label: "Festival Calendar" },
 ]
 

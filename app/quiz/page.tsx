@@ -312,7 +312,7 @@ export default function QuizPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={handlePlayAgain} className="px-6 py-3 border border-[#C9A84C]/50 text-[#C9A84C] font-semibold rounded-xl transition-all duration-300 hover:bg-[#C9A84C]/10">Play Again</button>
-              <Link href="/leaderboard" className="px-6 py-3 gold-gradient text-[#0F0B1E] font-semibold rounded-xl transition-all duration-300 hover:scale-105">View Leaderboard</Link>
+              <Link href="/achievements" className="px-6 py-3 gold-gradient text-[#0F0B1E] font-semibold rounded-xl transition-all duration-300 hover:scale-105">View Leaderboard</Link>
             </div>
           </div>
         )}
