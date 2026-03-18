@@ -1,0 +1,231 @@
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import { AppShell } from "@/components/app-shell"
+import { OrnamentalDivider } from "@/components/ornamental-divider"
+import { UploadZone } from "@/components/recognition/upload-zone"
+import { ResultCard } from "@/components/recognition/result-card"
+import { MonumentDetailTabs } from "@/components/recognition/monument-detail-tabs"
+import { ListenToEmperor } from "@/components/recognition/listen-to-emperor"
+import api from "@/lib/apiClient"
+import { Toast, useToast } from "@/components/Toast"
+import { useAuth } from "@/lib/authContext"
+import { addMonumentVisited, addXP } from "@/lib/authClient"
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RecognitionResult = Record<string, any>
+
+const MONUMENT_NAMES: Record<string, string> = {
+  'taj-mahal': 'Taj Mahal', 'red-fort': 'Red Fort', 'qutub-minar': 'Qutub Minar',
+  'gateway-india': 'Gateway of India', 'hampi': 'Hampi', 'golden-temple': 'Golden Temple Amritsar',
+  'kedarnath': 'Kedarnath Temple', 'meenakshi': 'Meenakshi Amman Temple', 'mysore-palace': 'Mysore Palace',
+  'hawa-mahal': 'Hawa Mahal Jaipur', 'charminar': 'Charminar Hyderabad', 'victoria-memorial': 'Victoria Memorial Kolkata',
+  'ajanta': 'Ajanta Caves', 'konark': 'Konark Sun Temple', 'india-gate': 'India Gate Delhi',
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center p-10">
+      <div className="w-10 h-10 border-4 rounded-full animate-spin"
+        style={{ borderColor: 'rgba(201,168,76,0.2)', borderTopColor: '#C9A84C' }} />
+    </div>
+  )
+}
+
+export default function RecognitionPage() {
+  const [result, setResult] = useState<RecognitionResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [fileName, setFileName] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<'upload' | 'camera'>('upload')
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { toast, showToast, hideToast } = useToast()
+  const { user } = useAuth()
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      cameraStream?.getTracks().forEach(t => t.stop())
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return
+    setLoading(true)
+    setResult(null)
+    setFileName(file.name)
+
+    const previewReader = new FileReader()
+    previewReader.onload = (e) => {
+      if (e.target?.result) setImagePreview(e.target.result as string)
+    }
+    previewReader.readAsDataURL(file)
+
+    const b64Reader = new FileReader()
+    b64Reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string
+      const base64 = dataUrl.split(',')[1]
+      try {
+        const res = await api.recognize(base64, file.name)
+        setResult(res.data)
+        showToast('Monument identified! 🏛️')
+        await api.awardXP('demo_user', 25, 'MONUMENT_VISIT').catch(() => null)
+        // Save to Supabase
+        if (user && res.data.monument_name && res.data.monument_name !== 'Unknown') {
+          addMonumentVisited(user.id, res.data.monument_name).catch(() => null)
+          addXP(user.id, 25).catch(() => null)
+        }
+      } catch {
+        setResult({
+          monument_name: 'Unknown',
+          is_unknown: true,
+          brief_description: 'Could not identify. Try a clearer image.'
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    b64Reader.readAsDataURL(file)
+  }
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      })
+      setCameraStream(stream)
+      if (videoRef.current) videoRef.current.srcObject = stream
+    } catch {
+      alert('Camera access denied. Please allow camera permission in your browser.')
+    }
+  }
+
+  const stopCamera = () => {
+    cameraStream?.getTracks().forEach(t => t.stop())
+    setCameraStream(null)
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
+    const canvas = canvasRef.current
+    const video = videoRef.current
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d')?.drawImage(video, 0, 0)
+    canvas.toBlob(async (blob) => {
+      if (!blob) return
+      stopCamera()
+      setActiveTab('upload')
+      const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' })
+      await handleFileUpload(file)
+    }, 'image/jpeg', 0.9)
+  }
+
+  return (
+    <AppShell>
+      <div className="p-4 lg:p-8 animate-fade-in">
+        {/* Header — context hint removed */}
+        <div className="mb-6">
+          <h1 className="font-serif text-3xl lg:text-4xl font-bold text-[#C9A84C]">
+            Monument Recognition
+          </h1>
+        </div>
+
+        <OrnamentalDivider />
+
+        {/* Upload / Camera tab buttons */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+          {(['upload', 'camera'] as const).map(tab => (
+            <button key={tab}
+              onClick={() => {
+                setActiveTab(tab)
+                if (tab === 'camera') startCamera()
+                else stopCamera()
+              }}
+              style={{
+                padding: '8px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                cursor: 'pointer',
+                background: activeTab === tab ? 'rgba(201,168,76,0.2)' : 'transparent',
+                border: activeTab === tab ? '1px solid #C9A84C' : '1px solid rgba(201,168,76,0.3)',
+                color: activeTab === tab ? '#C9A84C' : '#C4A882'
+              }}
+            >
+              {tab === 'upload' ? '📂 Upload Photo' : '📷 Use Camera'}
+            </button>
+          ))}
+        </div>
+
+        {/* Camera UI */}
+        {activeTab === 'camera' && (
+          <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+            <video ref={videoRef} autoPlay playsInline
+              style={{ width: '100%', maxHeight: 380, objectFit: 'cover', background: '#1C1638', display: 'block' }}
+            />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', padding: 12, background: 'rgba(15,11,30,0.9)' }}>
+              <button onClick={capturePhoto} style={{
+                padding: '12px 32px', borderRadius: 999,
+                background: 'linear-gradient(135deg, #D4893F, #C9A84C)',
+                color: 'white', border: 'none', cursor: 'pointer', fontSize: 16, fontWeight: 700
+              }}>📸 Capture</button>
+              <button onClick={() => { stopCamera(); setActiveTab('upload') }} style={{
+                padding: '12px 24px', borderRadius: 999,
+                background: 'rgba(196,91,58,0.2)', color: '#E8A85C',
+                border: '1px solid rgba(196,91,58,0.5)', cursor: 'pointer', fontSize: 14
+              }}>Stop</button>
+            </div>
+          </div>
+        )}
+
+        {/* Upload zone */}
+        {activeTab === 'upload' && (
+          <UploadZone onFileSelect={handleFileUpload} />
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="mt-8">
+            <p className="text-center text-[#C4A882] mb-4">Analyzing monument...</p>
+            <LoadingSpinner />
+          </div>
+        )}
+
+        {/* Error state when result is unknown */}
+        {!loading && result?.is_unknown && (
+          <div style={{ background: 'rgba(196,91,58,0.1)', border: '1px solid rgba(196,91,58,0.5)', borderRadius: 12, padding: 16, color: '#E8A85C', textAlign: 'center', margin: '24px 0' }}>
+            <div style={{ fontSize: 24 }}>⚠️</div>
+            <p>Could not identify the monument. Try a clearer image.</p>
+            <button
+              onClick={() => setResult(null)}
+              style={{ background: 'rgba(201,168,76,0.2)', border: '1px solid #C9A84C', color: '#C9A84C', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', marginTop: 8 }}
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Results section */}
+        {!loading && result && !result.is_unknown && (
+          <div className="mt-8 space-y-8 animate-slide-up">
+            <ResultCard result={result} imagePreview={imagePreview} fileName={fileName} />
+
+            {/* Listen to Emperor — audio player */}
+            {result.monument_name && result.monument_name !== 'Unknown' && (
+              <ListenToEmperor monumentName={result.monument_name} />
+            )}
+
+            {/* Monument Detail Tabs — all 6 tabs */}
+            {result.monument_name && result.monument_name !== 'Unknown' && (
+              <MonumentDetailTabs monumentName={result.monument_name} />
+            )}
+          </div>
+        )}
+      </div>
+
+      {toast && <Toast message={toast} onDone={hideToast} />}
+    </AppShell>
+  )
+}

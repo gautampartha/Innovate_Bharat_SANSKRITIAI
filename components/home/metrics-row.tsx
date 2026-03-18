@@ -1,0 +1,27 @@
+const metrics = [
+  { icon: "🏛️", label: "Monuments", value: "15+" },
+  { icon: "🔮", label: "Groq Vision AI", value: "" },
+  { icon: "🌍", label: "SDG 11 & 17", value: "" },
+  { icon: "⚡", label: "Under 2 sec", value: "" },
+]
+
+export function MetricsRow() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {metrics.map((metric, index) => (
+        <div
+          key={metric.label}
+          className={`glass-card rounded-xl p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg animate-fade-in stagger-${index + 1}`}
+        >
+          <span className="text-3xl mb-2 block">{metric.icon}</span>
+          <p className="text-[#C9A84C] font-bold text-lg">
+            {metric.value || metric.label}
+          </p>
+          {metric.value && (
+            <p className="text-[#C4A882] text-sm">{metric.label}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
