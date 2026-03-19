@@ -299,6 +299,8 @@ const HuntMap = dynamic(() => Promise.resolve(function HuntMapInner({
         maxZoom: 19,
       }).addTo(mapRef.current)
       L.control.zoom({ position: 'topright' }).addTo(mapRef.current)
+      // Force Leaflet to recalculate its size after mounting
+      setTimeout(() => { mapRef.current?.invalidateSize() }, 200)
     }
     // Pan to new center when active clue changes
     mapRef.current.panTo([riddles[activeClueIdx]?.target_lat ?? centerLat, riddles[activeClueIdx]?.target_lng ?? centerLng])
@@ -389,6 +391,11 @@ const HuntMap = dynamic(() => Promise.resolve(function HuntMapInner({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeClueIdx, completedClues.size, userLat, userLng, players, demoMode, monumentId])
 
+  // Invalidate size when active clue changes (panel may have re-rendered)
+  useEffect(() => {
+    setTimeout(() => { mapRef.current?.invalidateSize() }, 300)
+  }, [activeClueIdx])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -399,8 +406,8 @@ const HuntMap = dynamic(() => Promise.resolve(function HuntMapInner({
     }
   }, [])
 
-  return <div ref={containerRef} style={{ width: '100%', height: 220, borderRadius: 14, overflow: 'hidden' }} />
-}), { ssr: false, loading: () => <div style={{ width: '100%', height: 220, background: 'rgba(28,22,56,0.9)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C4A882', fontSize: 13 }}>Loading map...</div> })
+  return <div ref={containerRef} style={{ width: '100%', height: '460px', borderRadius: 14, overflow: 'hidden' }} />
+}), { ssr: false, loading: () => <div style={{ width: '100%', height: '460px', background: 'rgba(28,22,56,0.9)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C4A882', fontSize: 13 }}>Loading map...</div> })
 
 // ─── Loading Spinner ───
 function LoadingSpinner({ text }: { text?: string }) {
@@ -517,16 +524,8 @@ export default function HuntPage() {
     }
   }, [monumentSelected, geoStatus, demoMode, huntMonumentId, activeRiddles])
 
-  // ─── Auto-advance when locationVerified → true ───
-  useEffect(() => {
-    if (!locationVerified) return
-    if (!isAdvancingRef.current) return // only advance if WE set locationVerified
-    const timer = setTimeout(() => {
-      advanceToNextClue()
-    }, 1500)
-    return () => clearTimeout(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationVerified])
+  // NOTE: No locationVerified useEffect needed.
+  // Advance is driven directly from onClueVerified via sequential timers.
 
   // ─── GPS tracking ───
   useEffect(() => {
@@ -596,6 +595,7 @@ export default function HuntPage() {
     if (!activeRiddle) return
     if (isAdvancingRef.current) return // guard: already advancing
 
+    // Demo mode: skip GPS distance check but still require manual button click
     if (demoMode) {
       onClueVerified()
       return
@@ -609,37 +609,78 @@ export default function HuntPage() {
           onClueVerified()
         } else {
           showToast(`📍 Walk ~${Math.round(dist)}m closer`)
+          setCheckingGeo(false)
         }
-        setCheckingGeo(false)
       },
       () => { onClueVerified(); setCheckingGeo(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
 
-  // ─── Advance to next clue with clean state reset ───
-  // Uses functional updater to avoid stale closure on activeClueIdx.
-  const advanceToNextClue = () => {
-    setLocationVerified(false)
-    setCheckingGeo(false)
-    setShowHint(false)
-    setUserDistance(null)
+  // ─── On Clue Verified — single entry point, drives entire advance sequence ───
+  const onClueVerified = async () => {
+    if (!activeRiddle) return
+    if (isAdvancingRef.current) return  // prevent double-firing
+    isAdvancingRef.current = true       // lock immediately
 
+    // Show verified UI
+    setLocationVerified(true)
+
+    const clueId = activeRiddle.id
+    const userName = user?.id || 'demo_user'
+
+    // Determine XP tier by arrival position
+    const pos = (clueCompletions[clueId] || []).length
+    let xpAmount = 10, medal = '👏 Participation'
+    if (pos === 0) { xpAmount = 50; medal = '🥇 First to find it!' }
+    else if (pos === 1) { xpAmount = 30; medal = '🥈 Second place!' }
+    else if (pos === 2) { xpAmount = 20; medal = '🥉 Third place!' }
+
+    // Update completions, XP display, toast
+    setClueCompletions(prev => ({ ...prev, [clueId]: [...(prev[clueId] || []), userName] }))
+    setXpEarned(prev => prev + xpAmount)
+    setCompletedClues(prev => new Set([...prev, clueId]))
+    showToast(`${medal} +${xpAmount} XP`)
+    setCelebrateXp(xpAmount)
+    setCelebrateMedal(medal)
+
+    // Persist XP to Supabase (non-blocking)
+    if (user?.id) {
+      addXP(user.id, xpAmount, 'HUNT_STEP_DONE').then(async newXP => {
+        setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
+        window.dispatchEvent(new Event('xp-updated'))
+        await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
+      }).catch(() => {})
+    }
+
+    // After 1.2s clear celebration overlay
     setTimeout(() => {
+      setCelebrateXp(null)
+      setCelebrateMedal('')
+    }, 1200)
+
+    // After 1.5s: reset per-clue state then advance index
+    setTimeout(() => {
+      // Step 1: hide verified message, show loading
+      setLocationVerified(false)
+      setCheckingGeo(false)
+      setShowHint(false)
+      setUserDistance(null)
+
+      // Step 2: advance clue index
       setActiveClueIdx(prev => {
         const next = prev + 1
         if (next < activeRiddles.length) {
           window.scrollTo({ top: 0, behavior: 'smooth' })
-          // Release guard after new clue is stable
           setTimeout(() => { isAdvancingRef.current = false }, 500)
           return next
         } else {
-          // Last clue — trigger completion
+          // All clues done — show completion screen
           setTimeout(() => {
             setHuntCompleted(true)
             isAdvancingRef.current = false
             if (user?.id) {
-              addXP(user.id, 500, 'HUNT_COMPLETED').then(async (newXP) => {
+              addXP(user.id, 500, 'HUNT_COMPLETED').then(async newXP => {
                 setProfile((p: Record<string, unknown> | null) => p ? { ...p, total_xp: newXP } : p)
                 window.dispatchEvent(new Event('xp-updated'))
                 await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
@@ -650,62 +691,7 @@ export default function HuntPage() {
           return prev
         }
       })
-    }, 300)
-  }
-
-  // ─── On Clue Verified ───
-  const onClueVerified = async () => {
-    if (!activeRiddle) return
-    if (isAdvancingRef.current) return // GUARD: prevent double-firing
-    isAdvancingRef.current = true      // lock immediately
-
-    setLocationVerified(true)
-    const clueId = activeRiddle.id
-    const userName = user?.id || 'demo_user'
-
-    // Determine placement
-    const currentCompleters = clueCompletions[clueId] || []
-    const position = currentCompleters.length
-    let xpAmount = 10
-    let medal = ''
-    if (position === 0) { xpAmount = 50; medal = '🥇 First to find it!' }
-    else if (position === 1) { xpAmount = 30; medal = '🥈 Second place!' }
-    else if (position === 2) { xpAmount = 20; medal = '🥉 Third place!' }
-    else { xpAmount = 10; medal = '👏 Participation' }
-
-    // Record completion
-    setClueCompletions(prev => ({
-      ...prev,
-      [clueId]: [...(prev[clueId] || []), userName]
-    }))
-
-    // Award XP
-    setXpEarned(prev => prev + xpAmount)
-    showToast(`${medal} +${xpAmount} XP`)
-
-    // Persist XP
-    try {
-      if (user?.id) {
-        const newXP = await addXP(user.id, xpAmount, 'HUNT_STEP_DONE')
-        setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
-        window.dispatchEvent(new Event('xp-updated'))
-        await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
-      }
-    } catch { /* silent */ }
-
-    // Update completed clues
-    const newCompleted = new Set(completedClues)
-    newCompleted.add(clueId)
-    setCompletedClues(newCompleted)
-
-    setCelebrateXp(xpAmount)
-    setCelebrateMedal(medal)
-
-    // Clear celebration before auto-advance fires via useEffect
-    setTimeout(() => {
-      setCelebrateXp(null)
-      setCelebrateMedal('')
-    }, 1200)
+    }, 1500)
   }
 
   const activateDemo = () => { setDemoMode(true); setGeoStatus('inside') }
@@ -1028,10 +1014,10 @@ export default function HuntPage() {
           </div>
 
           {/* ── RIGHT PANEL (40%) — Sticky Map ── */}
-          <div className="w-full md:w-[40%] order-1 md:order-2 md:sticky md:top-[80px] flex flex-col md:min-h-[500px]">
+          <div className="w-full md:w-[40%] order-1 md:order-2 md:sticky md:top-[80px] flex flex-col">
 
             {/* Map container */}
-            <div className="w-full h-[200px] md:h-full md:min-h-[500px] rounded-xl overflow-hidden border border-[#C9A84C]/20 bg-[#1C1638]/90 relative z-0">
+            <div style={{ width: '100%', height: '100%', minHeight: '460px', position: 'relative' }} className="rounded-xl overflow-hidden border border-[#C9A84C]/20 bg-[#1C1638]/90 z-0">
               <HuntMap
                 riddles={activeRiddles}
                 activeClueIdx={activeClueIdx}
