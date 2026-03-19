@@ -722,37 +722,27 @@ export default function HuntPage() {
       <div className="p-4 lg:p-8 animate-fade-in">
 
         {/* ═══ Side-by-side wrapper ═══ */}
-        <div className="flex flex-col md:flex-row gap-4 w-full" style={{ alignItems: 'flex-start' }}>
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full items-start">
 
           {/* ── LEFT PANEL (60%) — Riddle + Controls ── */}
-          <div className="flex flex-col gap-4 w-full md:w-[60%] order-2 md:order-1">
+          <div className="flex flex-col gap-3 md:gap-4 w-full md:w-[60%] order-2 md:order-1">
 
             {/* Demo Mode ribbon */}
             {demoMode && (
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(201,168,76,0.2), rgba(212,137,63,0.15))',
-                border: '1px solid rgba(201,168,76,0.5)', borderRadius: 10,
-                padding: '8px 16px',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                color: '#E8C97A', fontSize: 13, fontWeight: 700
-              }}>
-                <span>🎮 DEMO MODE — Geo-fence bypassed | Synthetic players active</span>
-                <button onClick={() => setDemoMode(false)} style={{
-                  background: 'rgba(201,168,76,0.2)', border: '1px solid rgba(201,168,76,0.4)',
-                  borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontSize: 11,
-                  fontWeight: 600, cursor: 'pointer'
-                }}>Turn Off</button>
+              <div className="bg-gradient-to-br from-[#C9A84C]/20 to-[#D4893F]/15 border border-[#C9A84C]/50 rounded-xl p-3 flex items-center justify-between text-[#E8C97A] text-xs md:text-sm font-bold">
+                <span>🎮 DEMO MODE<span className="hidden sm:inline"> — Geo bypassed</span></span>
+                <button onClick={() => setDemoMode(false)} className="bg-[#C9A84C]/20 border border-[#C9A84C]/40 rounded-lg px-2 md:px-3 py-1 text-[#C9A84C] text-[10px] md:text-sm font-semibold cursor-pointer min-h-[44px] flex items-center justify-center">Turn Off</button>
               </div>
             )}
 
             {/* Progress bar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h1 style={{ fontFamily: 'Georgia,serif', fontSize: 24, color: '#C9A84C', fontWeight: 700, margin: 0 }}>
+            <div className="flex items-center justify-between">
+              <h1 className="font-serif text-xl md:text-2xl text-[#C9A84C] font-bold m-0">
                 {t('treasure_hunt')}
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ color: '#F5E6D3', fontSize: 14, fontWeight: 600 }}>Clue {activeClueIdx + 1} of {TAJ_MAHAL_RIDDLES.length}</span>
-                <span style={{ padding: '4px 10px', background: 'rgba(201,168,76,0.15)', borderRadius: 20, color: '#C9A84C', fontSize: 13, fontWeight: 700 }}>⚡ {xpEarned} XP</span>
+              <div className="flex items-center gap-2 md:gap-3">
+                <span className="text-[#F5E6D3] text-sm md:text-base font-semibold">Clue {activeClueIdx + 1} of {TAJ_MAHAL_RIDDLES.length}</span>
+                <span className="px-3 py-1.5 bg-[#C9A84C]/15 rounded-full text-[#C9A84C] text-[11px] md:text-[13px] font-bold">⚡ {xpEarned} XP</span>
               </div>
             </div>
 
@@ -768,52 +758,44 @@ export default function HuntPage() {
             </div>
 
             {/* Scoreboard toggle */}
-            <div>
-              <button onClick={() => setShowLeaderboard(!showLeaderboard)} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 14px', borderRadius: 10,
-                background: 'rgba(28,22,56,0.9)',
-                border: '1px solid rgba(201,168,76,0.25)',
-                color: '#C9A84C', fontSize: 13, fontWeight: 600, cursor: 'pointer'
-              }}>
+            <div className="relative">
+              <button 
+                onClick={() => setShowLeaderboard(!showLeaderboard)} 
+                className="flex items-center gap-2 px-4 rounded-xl bg-[#1C1638]/90 border border-[#C9A84C]/20 text-[#C9A84C] text-xs md:text-sm font-semibold cursor-pointer min-h-[44px]"
+              >
                 🏆 Scoreboard {showLeaderboard ? '▲' : '▼'}
               </button>
 
               {showLeaderboard && (
-                <div style={{
-                  marginTop: 8, background: 'rgba(28,22,56,0.9)',
-                  border: '1px solid rgba(201,168,76,0.2)', borderRadius: 14,
-                  padding: 12, animation: 'slideIn 0.2s ease'
-                }}>
-                  {leaderboard.map((p, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '7px 10px', borderRadius: 8, marginBottom: 3,
-                      background: p.isUser ? 'rgba(201,168,76,0.1)' : 'transparent',
-                      border: p.isUser ? '1px solid rgba(201,168,76,0.35)' : '1px solid transparent',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 13, width: 22, textAlign: 'center' as const }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`}</span>
-                        <span style={{ color: p.isUser ? '#C9A84C' : '#F5E6D3', fontSize: 13, fontWeight: p.isUser ? 700 : 500 }}>{p.avatar} {p.name}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12 }}>
-                        <span style={{ color: '#7A6E5C' }}>{p.clues} clue{p.clues !== 1 ? 's' : ''} ✓</span>
-                        <span style={{ color: '#C9A84C', fontWeight: 700 }}>⚡ {p.xp} XP</span>
-                      </div>
+                <>
+                  <div className="md:hidden fixed inset-0 bg-black/60 z-40" onClick={() => setShowLeaderboard(false)} />
+                  <div className="fixed md:static bottom-0 left-0 w-full md:w-auto max-h-[50vh] md:max-h-none overflow-y-auto z-50 bg-[#1C1638] md:bg-[#1C1638]/90 border-t md:border border-[#C9A84C]/20 md:rounded-xl rounded-t-2xl p-4 md:p-3 animate-slide-up md:mt-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none">
+                    <div className="flex md:hidden justify-between items-center mb-4">
+                      <span className="text-[#C9A84C] font-bold text-lg">🏆 Scoreboard</span>
+                      <button onClick={() => setShowLeaderboard(false)} className="text-[#C4A882] text-2xl p-2 min-h-[44px] leading-none">&times;</button>
                     </div>
-                  ))}
-                </div>
+                    {leaderboard.map((p, i) => (
+                      <div key={i} className={`flex items-center justify-between p-2 md:p-2 rounded-lg mb-1 ${p.isUser ? 'bg-[#C9A84C]/10 border border-[#C9A84C]/30' : 'bg-transparent border border-transparent'}`}>
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 md:w-6 text-center text-sm">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`}</span>
+                          <span className={`${p.isUser ? 'text-[#C9A84C] font-bold' : 'text-[#F5E6D3] font-medium'} text-xs md:text-sm`}>
+                            <span className="inline-block md:inline">{p.avatar}</span> {p.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] md:text-xs">
+                          <span className="text-[#7A6E5C]">{p.clues} clue{p.clues !== 1 ? 's' : ''} ✓</span>
+                          <span className="text-[#C9A84C] font-bold">⚡ {p.xp} XP</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
             {/* Active Riddle Card */}
             {activeRiddle && !locationVerified && (
-              <div style={{
-                background: 'rgba(28,22,56,0.9)', backdropFilter: 'blur(12px)',
-                border: '2px solid rgba(212,137,63,0.4)',
-                borderRadius: 20, padding: 24,
-                backgroundImage: 'linear-gradient(135deg, rgba(212,137,63,0.08) 0%, transparent 60%)',
-              }}>
+              <div className="bg-[#1C1638]/90 backdrop-blur-md border border-[#D4893F]/40 p-4 md:p-6 rounded-2xl bg-gradient-to-br from-[#D4893F]/10 to-transparent">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                   <span style={{
                     display: 'inline-block', padding: '4px 12px',
@@ -826,32 +808,26 @@ export default function HuntPage() {
 
                 {/* Riddle text */}
                 <p style={{
-                  color: '#F5E6D3', fontSize: 18, lineHeight: 1.7,
+                  color: '#F5E6D3', fontSize: 16, lineHeight: 1.6,
                   fontFamily: 'Georgia, serif', marginBottom: 20,
                   fontStyle: 'italic'
-                }}>
+                }} className="md:text-lg">
                   &ldquo;{activeRiddle.riddle}&rdquo;
                 </p>
 
                 {/* Hint toggle */}
-                <button onClick={() => setShowHint(!showHint)} style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 14px', borderRadius: 8, marginBottom: 16,
-                  background: 'rgba(201,168,76,0.08)',
-                  border: '1px solid rgba(201,168,76,0.2)',
-                  color: '#C9A84C', fontSize: 13, fontWeight: 600, cursor: 'pointer'
-                }}>
-                  {showHint ? <EyeOff size={14} /> : <Eye size={14} />}
+                <button onClick={() => setShowHint(!showHint)} className="flex items-center gap-2 px-3 md:px-4 py-2 min-h-[44px] rounded-lg mb-4 bg-[#C9A84C]/10 border border-[#C9A84C]/20 text-[#C9A84C] text-xs md:text-sm font-semibold cursor-pointer">
+                  {showHint ? <EyeOff size={16} /> : <Eye size={16} />}
                   {showHint ? 'Hide Hint' : 'Show Hint'}
                 </button>
                 {showHint && (
                   <div style={{
-                    padding: '10px 14px', marginBottom: 16,
+                    padding: '12px 16px', marginBottom: 16,
                     background: 'rgba(201,168,76,0.06)',
                     border: '1px solid rgba(201,168,76,0.15)',
-                    borderRadius: 10, color: '#E8C97A', fontSize: 14,
+                    borderRadius: 10, color: '#E8C97A', fontSize: 13,
                     fontStyle: 'italic'
-                  }}>
+                  }} className="md:text-sm">
                     💡 {activeRiddle.hint}
                   </div>
                 )}
@@ -860,14 +836,8 @@ export default function HuntPage() {
                 <button
                   onClick={verifyClueLocation}
                   disabled={checkingGeo}
-                  style={{
-                    width: '100%', padding: '14px',
-                    background: checkingGeo ? 'rgba(83,74,183,0.3)' : 'linear-gradient(135deg, #534AB7, #7C3AED)',
-                    color: '#fff', border: 'none', borderRadius: 14,
-                    fontSize: 16, fontWeight: 700, cursor: checkingGeo ? 'not-allowed' : 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    transition: 'all 0.3s ease',
-                  }}
+                  className={`w-full p-3 md:p-4 min-h-[48px] rounded-xl flex items-center justify-center gap-2 text-white text-sm md:text-base font-bold transition-all duration-300 border-none ${checkingGeo ? 'bg-[#534AB7]/30 cursor-not-allowed' : 'gold-gradient cursor-pointer'}`}
+                  style={{ background: checkingGeo ? 'rgba(83,74,183,0.3)' : 'linear-gradient(135deg, #534AB7, #7C3AED)' }}
                 >
                   {checkingGeo ? (
                     <>📍 Verifying location...</>
@@ -881,63 +851,45 @@ export default function HuntPage() {
             {/* Location verified transition */}
             {locationVerified && celebrateXp === null && (
               <div style={{
-                textAlign: 'center', padding: 40,
+                textAlign: 'center', padding: '20px md:30px',
                 background: 'rgba(75,155,142,0.1)',
                 border: '1px solid rgba(75,155,142,0.3)',
-                borderRadius: 16, color: '#4B9B8E', fontSize: 16, fontWeight: 600
-              }}>
+                borderRadius: 16, color: '#4B9B8E', fontSize: 14, fontWeight: 600
+              }} className="md:text-base">
                 ✓ Location verified — Loading next clue...
               </div>
             )}
           </div>
 
           {/* ── RIGHT PANEL (40%) — Sticky Map ── */}
-          <div className="w-full md:w-[40%] order-1 md:order-2"
-            style={{ position: 'sticky', top: '80px', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+          <div className="w-full md:w-[40%] order-1 md:order-2 md:sticky md:top-[80px] flex flex-col md:min-h-[500px]">
 
             {/* Map container */}
-            <div style={{ flex: 1, minHeight: '460px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(201,168,76,0.2)' }}>
-              <div className="h-[220px] md:h-full" style={{ width: '100%' }}>
-                <HuntMap
-                  riddles={TAJ_MAHAL_RIDDLES}
-                  activeClueIdx={activeClueIdx}
-                  completedClues={completedClues}
-                  userLat={userLat}
-                  userLng={userLng}
-                  players={playerStates}
-                  demoMode={demoMode}
-                />
-              </div>
-            </div>
-
-            {/* Player legend chips (below map) */}
-            <div className="flex flex-row flex-wrap gap-2 mt-2">
-              <span style={{ fontSize: 11, color: '#C9A84C', padding: '3px 8px', background: 'rgba(201,168,76,0.1)', borderRadius: 8 }}>🟡 Active</span>
-              <span style={{ fontSize: 11, color: '#fff', padding: '3px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 8 }}>⚪ You</span>
-              {demoMode && <>
-                <span style={{ fontSize: 11, color: '#FF6B9D', padding: '3px 8px', background: 'rgba(255,107,157,0.1)', borderRadius: 8 }}>🔴 Priya</span>
-                <span style={{ fontSize: 11, color: '#4ECDC4', padding: '3px 8px', background: 'rgba(78,205,196,0.1)', borderRadius: 8 }}>🟢 Arjun</span>
-                <span style={{ fontSize: 11, color: '#FFE66D', padding: '3px 8px', background: 'rgba(255,230,109,0.1)', borderRadius: 8 }}>🟡 Diya</span>
-              </>}
+            <div className="w-full h-[200px] md:h-full md:min-h-[500px] rounded-xl overflow-hidden border border-[#C9A84C]/20 bg-[#1C1638]/90 relative z-0">
+              <HuntMap
+                riddles={TAJ_MAHAL_RIDDLES}
+                activeClueIdx={activeClueIdx}
+                completedClues={completedClues}
+                userLat={userLat}
+                userLng={userLng}
+                players={playerStates}
+                demoMode={demoMode}
+              />
             </div>
 
             {/* Player status chips */}
             {demoMode && (
-              <div className="flex flex-row flex-wrap gap-2 mt-2">
+              <div className="flex flex-row overflow-hidden max-w-full gap-2 mt-3 items-center">
                 {[
                   { avatar: '🧑', name: profile?.full_name?.split(' ')[0] || 'You', clue: activeClueIdx + 1, color: '#C9A84C', isUser: true },
                   ...playerStates.map(p => ({ avatar: p.avatar, name: p.name, clue: Math.min(p.cluesCompleted + 1, 5), color: p.color, isUser: false }))
                 ].map((p, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '5px 10px', borderRadius: 20, whiteSpace: 'nowrap' as const, flexShrink: 0,
-                    background: p.isUser ? 'rgba(201,168,76,0.15)' : 'rgba(28,22,56,0.9)',
-                    border: `1px solid ${p.isUser ? 'rgba(201,168,76,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                    fontSize: 12, color: p.isUser ? '#C9A84C' : '#C4A882', fontWeight: 600
-                  }}>
-                    <span>{p.avatar}</span>
-                    <span>{p.name}</span>
-                    <span style={{ color: '#7A6E5C', fontSize: 10 }}>— Clue {p.clue}</span>
+                  <div key={i} className={`flex items-center gap-1.5 md:gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-full whitespace-nowrap flex-shrink-0 min-h-[28px] ${p.isUser ? 'bg-[#C9A84C]/15 border border-[#C9A84C]/40' : 'bg-[#1C1638]/90 border border-white/10'}`}>
+                    <div className="w-2 h-2 rounded-full md:hidden flex-shrink-0" style={{ backgroundColor: p.color }}></div>
+                    <span className="hidden md:inline">{p.avatar}</span>
+                    <span className={`hidden md:inline text-xs font-semibold ${p.isUser ? 'text-[#C9A84C]' : 'text-[#C4A882]'}`}>{p.name}</span>
+                    <span className="md:hidden text-[10px] font-bold" style={{ color: p.color }}>C{p.clue}</span>
+                    <span className="hidden md:inline text-[10px] text-[#7A6E5C]">— Clue {p.clue}</span>
                   </div>
                 ))}
               </div>
