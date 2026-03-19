@@ -188,7 +188,8 @@ export default function ChatPage() {
       const spokenText = e.results[0][0].transcript as string
       setInput(spokenText)
       lastWasVoiceRef.current = true
-      sendMessage(spokenText)
+      // setTimeout allows React state to settle before the API call fires
+      setTimeout(() => sendMessage(spokenText), 100)
     }
     try { recognition.start() } catch { setListening(false) }
   }
@@ -283,7 +284,7 @@ export default function ChatPage() {
         {/* Suggested questions */}
         <div className="px-4 py-2 flex gap-2 overflow-x-auto">
           {suggestedQuestions.map((question) => (
-            <button key={question} onClick={() => setInput(question)} className="flex-shrink-0 px-3 py-1 glass-card rounded-full text-sm text-[#C4A882] hover:text-[#C9A84C] hover:border-[#C9A84C] transition-colors">{question}</button>
+            <button key={question} onClick={() => { setInput(question); sendMessage(question) }} className="flex-shrink-0 px-3 py-1 glass-card rounded-full text-sm text-[#C4A882] hover:text-[#C9A84C] hover:border-[#C9A84C] transition-colors">{question}</button>
           ))}
         </div>
 

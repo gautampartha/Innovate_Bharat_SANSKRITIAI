@@ -303,23 +303,33 @@ export default function RecognitionPage() {
               </div>
             )}
 
-            {/* Let's Explore button for Taj Mahal */}
-            {result.monument_name && result.monument_name.toLowerCase().includes('taj') && (
-              <button
-                onClick={() => router.push('/explore')}
-                style={{
-                  background: 'linear-gradient(135deg, #C9A84C, #D4893F)',
-                  borderRadius: '16px', padding: '14px 28px',
-                  color: '#0F0B1E', fontWeight: '700', fontSize: '16px',
-                  width: '100%', border: 'none', cursor: 'pointer',
-                  marginTop: '16px', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', gap: '10px', letterSpacing: '0.5px'
-                }}
-              >
-                🗺️ Let&apos;s Explore Taj Mahal
-                <span style={{ fontSize: '12px', opacity: 0.8 }}>+350 XP available</span>
-              </button>
-            )}
+            {/* Let's Explore button — shown for all 3 demo monuments */}
+            {(() => {
+              const name = result.monument_name || ''
+              const id = result.monument_id || ''
+              const isDemoMonument =
+                name.toLowerCase().includes('taj') ||
+                name.toLowerCase().includes('red fort') ||
+                name.toLowerCase().includes('qutub') ||
+                id === 'taj-mahal' || id === 'red-fort' || id === 'qutub-minar'
+              if (!name || name === 'Unknown' || !isDemoMonument) return null
+              return (
+                <button
+                  onClick={() => router.push('/explore')}
+                  style={{
+                    background: 'linear-gradient(135deg, #C9A84C, #D4893F)',
+                    borderRadius: '16px', padding: '14px 28px',
+                    color: '#0F0B1E', fontWeight: '700', fontSize: '16px',
+                    width: '100%', border: 'none', cursor: 'pointer',
+                    marginTop: '16px', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: '10px', letterSpacing: '0.5px'
+                  }}
+                >
+                  🗺️ Let&apos;s Explore {name.split(' ').slice(0,2).join(' ')}
+                  <span style={{ fontSize: '12px', opacity: 0.8 }}>+350 XP available</span>
+                </button>
+              )
+            })()}
 
             {/* Listen to Emperor */}
             {result.monument_name && result.monument_name !== 'Unknown' && (

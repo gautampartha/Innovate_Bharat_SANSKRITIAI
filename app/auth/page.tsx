@@ -1,30 +1,40 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn, signUp } from '@/lib/authClient'
 import { useLang } from '@/lib/languageContext'
+import { useAuth } from '@/lib/authContext'
 
 export default function AuthPage() {
   const router = useRouter()
   const { t } = useLang()
+  const { user, loading } = useAuth()
   const [mode, setMode] = useState<'login' | 'signup'>('login')
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
+
+  // Redirect already-logged-in users directly to home
+  useEffect(() => {
+    if (!loading && user) router.replace('/')
+  }, [user, loading, router])
+
+  // Show nothing while checking auth or redirecting
+  if (loading || user) return null
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value })); setError('')
   }
 
   const handleSubmit = async () => {
-    setError(''); setLoading(true)
+    setError(''); setIsLoading(true)
     try {
       if (mode === 'signup') {
-        if (!form.fullName.trim()) { setError('Please enter your full name'); setLoading(false); return }
-        if (!form.phone.trim()) { setError('Please enter your phone number'); setLoading(false); return }
-        if (form.password !== form.confirmPassword) { setError('Passwords do not match'); setLoading(false); return }
-        if (form.password.length < 6) { setError('Password must be at least 6 characters'); setLoading(false); return }
+        if (!form.fullName.trim()) { setError('Please enter your full name'); setIsLoading(false); return }
+        if (!form.phone.trim()) { setError('Please enter your phone number'); setIsLoading(false); return }
+        if (form.password !== form.confirmPassword) { setError('Passwords do not match'); setIsLoading(false); return }
+        if (form.password.length < 6) { setError('Password must be at least 6 characters'); setIsLoading(false); return }
         await signUp(form.email, form.password, form.fullName, form.phone)
         setSuccess(t('account_created'))
       } else {
@@ -38,7 +48,7 @@ export default function AuthPage() {
       else if (msg.includes('email')) setError('Please enter a valid email address.')
       else if (msg.includes('Database')) { setError('Account created! Please check your email to verify your account.'); setMode('login') }
       else setError(msg || 'Something went wrong. Please try again.')
-    } finally { setLoading(false) }
+    } finally { setIsLoading(false) }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -94,12 +104,12 @@ export default function AuthPage() {
           )}
           {error && <div style={{ background: 'rgba(196,91,58,0.1)', border: '1px solid rgba(196,91,58,0.5)', borderRadius: '10px', padding: '10px 14px', color: '#E8A85C', fontSize: '13px' }}>⚠️ {error}</div>}
           {success && <div style={{ background: 'rgba(75,155,142,0.1)', border: '1px solid rgba(75,155,142,0.5)', borderRadius: '10px', padding: '10px 14px', color: '#7ECDC0', fontSize: '13px' }}>✅ {success}</div>}
-          <button onClick={handleSubmit} disabled={loading} style={{
+          <button onClick={handleSubmit} disabled={isLoading} style={{
             width: '100%', padding: '14px',
-            background: loading ? 'rgba(201,168,76,0.3)' : 'linear-gradient(135deg, #D4893F, #C9A84C)',
-            color: loading ? '#C4A882' : '#0F0B1E', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700,
-            cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', marginTop: '0.5rem'
-          }}>{loading ? t('please_wait') : mode === 'login' ? t('sign_in') : t('create_account')}</button>
+            background: isLoading ? 'rgba(201,168,76,0.3)' : 'linear-gradient(135deg, #D4893F, #C9A84C)',
+            color: isLoading ? '#C4A882' : '#0F0B1E', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 700,
+            cursor: isLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease', marginTop: '0.5rem'
+          }}>{isLoading ? t('please_wait') : mode === 'login' ? t('sign_in') : t('create_account')}</button>
           {mode === 'login' && (
             <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
               <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: '#C9A84C', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}>{t('no_account')}</button>

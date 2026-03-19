@@ -93,8 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     }, 3000)
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       clearTimeout(timeout)
+      if (error) {
+        // Stale/invalid token — clear it so app loads normally next time
+        supabase.auth.signOut().catch(() => {})
+        setUser(null)
+        setLoading(false)
+        return
+      }
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchProfile(session.user.id).finally(() => {
