@@ -188,35 +188,44 @@ const MONUMENT_RIDDLES: Record<string, typeof TAJ_MAHAL_RIDDLES> = {
   'qutub-minar': QUTUB_MINAR_RIDDLES,
 }
 
-// ─── Per-monument synthetic player offsets ───
-const MONUMENT_PLAYER_OFFSETS: Record<string, { name: string; color: string; avatar: string; offsets: [number, number][] }[]> = {
+// ─── Per-monument synthetic player data with real GPS positions ───
+const MONUMENT_PLAYERS: Record<string, {
+  id: string; name: string; color: string; avatar: string;
+  positions: { lat: number; lng: number }[]; clueInterval: number
+}[]> = {
   'taj-mahal': [
-    { name: 'Priya', color: '#FF6B9D', avatar: '👩', offsets: [[-0.0006, -0.0003], [-0.0005, -0.0004], [-0.0004, -0.0003]] },
-    { name: 'Arjun', color: '#4ECDC4', avatar: '👨', offsets: [[0.0002, 0.0002], [0.0001, 0.0001], [0.0000, 0.0000]] },
-    { name: 'Diya',  color: '#FFE66D', avatar: '👧', offsets: [[-0.0008, 0.0005], [-0.0007, 0.0003], [-0.0005, 0.0001]] },
+    { id: 'p0', name: 'Priya', color: '#FF6B9D', avatar: '👩', clueInterval: 45000,
+      positions: [{ lat: 27.17455, lng: 78.04190 }, { lat: 27.17498, lng: 78.04178 }, { lat: 27.17535, lng: 78.04220 }] },
+    { id: 'p1', name: 'Arjun', color: '#4ECDC4', avatar: '👨', clueInterval: 75000,
+      positions: [{ lat: 27.17520, lng: 78.04240 }, { lat: 27.17461, lng: 78.04268 }, { lat: 27.17390, lng: 78.04215 }] },
+    { id: 'p2', name: 'Diya',  color: '#FFE66D', avatar: '👧', clueInterval: 60000,
+      positions: [{ lat: 27.17440, lng: 78.04260 }, { lat: 27.17510, lng: 78.04215 }, { lat: 27.17462, lng: 78.04178 }] },
   ],
   'red-fort': [
-    { name: 'Priya', color: '#FF6B9D', avatar: '👩', offsets: [[-0.0005, -0.0003], [-0.0004, -0.0002], [-0.0003, -0.0001]] },
-    { name: 'Arjun', color: '#4ECDC4', avatar: '👨', offsets: [[0.0003, 0.0003], [0.0002, 0.0002], [0.0001, 0.0001]] },
-    { name: 'Diya',  color: '#FFE66D', avatar: '👧', offsets: [[-0.0006, 0.0004], [-0.0005, 0.0002], [-0.0004, 0.0001]] },
+    { id: 'p0', name: 'Priya', color: '#FF6B9D', avatar: '👩', clueInterval: 45000,
+      positions: [{ lat: 28.6558, lng: 77.2386 }, { lat: 28.6559, lng: 77.2393 }, { lat: 28.6560, lng: 77.2405 }] },
+    { id: 'p1', name: 'Arjun', color: '#4ECDC4', avatar: '👨', clueInterval: 75000,
+      positions: [{ lat: 28.6561, lng: 77.2415 }, { lat: 28.6565, lng: 77.2428 }, { lat: 28.6558, lng: 77.2386 }] },
+    { id: 'p2', name: 'Diya',  color: '#FFE66D', avatar: '👧', clueInterval: 60000,
+      positions: [{ lat: 28.6560, lng: 77.2400 }, { lat: 28.6562, lng: 77.2410 }, { lat: 28.6563, lng: 77.2420 }] },
   ],
   'qutub-minar': [
-    { name: 'Priya', color: '#FF6B9D', avatar: '👩', offsets: [[-0.0004, -0.0003], [-0.0003, -0.0002], [-0.0002, -0.0001]] },
-    { name: 'Arjun', color: '#4ECDC4', avatar: '👨', offsets: [[0.0002, 0.0002], [0.0001, 0.0001], [0.0000, 0.0000]] },
-    { name: 'Diya',  color: '#FFE66D', avatar: '👧', offsets: [[-0.0005, 0.0004], [-0.0004, 0.0002], [-0.0003, 0.0001]] },
+    { id: 'p0', name: 'Priya', color: '#FF6B9D', avatar: '👩', clueInterval: 45000,
+      positions: [{ lat: 28.5244, lng: 77.1855 }, { lat: 28.5247, lng: 77.1849 }, { lat: 28.5242, lng: 77.1852 }] },
+    { id: 'p1', name: 'Arjun', color: '#4ECDC4', avatar: '👨', clueInterval: 75000,
+      positions: [{ lat: 28.5256, lng: 77.1843 }, { lat: 28.5251, lng: 77.1844 }, { lat: 28.5244, lng: 77.1855 }] },
+    { id: 'p2', name: 'Diya',  color: '#FFE66D', avatar: '👧', clueInterval: 60000,
+      positions: [{ lat: 28.5248, lng: 77.1850 }, { lat: 28.5245, lng: 77.1855 }, { lat: 28.5243, lng: 77.1848 }] },
   ],
 }
 
-// Generate player states anchored to first riddle of the monument
-function makePlayers(monumentId: string, riddles: typeof TAJ_MAHAL_RIDDLES): PlayerState[] {
-  const offsets = MONUMENT_PLAYER_OFFSETS[monumentId] || MONUMENT_PLAYER_OFFSETS['taj-mahal']
-  const anchor = riddles[0]
-  return offsets.map((p, i) => ({
-    id: `player_${i}`, name: p.name, color: p.color, avatar: p.avatar,
-    lat: anchor.target_lat + p.offsets[0][0],
-    lng: anchor.target_lng + p.offsets[0][1],
-    prevLat: anchor.target_lat + p.offsets[0][0],
-    prevLng: anchor.target_lng + p.offsets[0][1],
+// Generate PlayerState[] from MONUMENT_PLAYERS
+function makePlayers(monumentId: string): PlayerState[] {
+  const players = MONUMENT_PLAYERS[monumentId] || MONUMENT_PLAYERS['taj-mahal']
+  return players.map(p => ({
+    id: p.id, name: p.name, color: p.color, avatar: p.avatar,
+    lat: p.positions[0].lat, lng: p.positions[0].lng,
+    prevLat: p.positions[0].lat, prevLng: p.positions[0].lng,
     cluesCompleted: 0, xp: 0, posIndex: 0,
   }))
 }
@@ -447,7 +456,7 @@ export default function HuntPage() {
 
   // ─── Synthetic players ───
   const initRiddles = MONUMENT_RIDDLES[lastMonument?.id || 'taj-mahal'] || TAJ_MAHAL_RIDDLES
-  const [playerStates, setPlayerStates] = useState<PlayerState[]>(() => makePlayers(lastMonument?.id || 'taj-mahal', initRiddles))
+  const [playerStates, setPlayerStates] = useState<PlayerState[]>(() => makePlayers(lastMonument?.id || 'taj-mahal'))
 
   // ─── Leaderboard ───
   const [showLeaderboard, setShowLeaderboard] = useState(false)
@@ -517,8 +526,10 @@ export default function HuntPage() {
   useEffect(() => {
     if (!huntStarted || !demoMode) return
     const interval = setInterval(() => {
+      const players = MONUMENT_PLAYERS[huntMonumentId] || MONUMENT_PLAYERS['taj-mahal']
       setPlayerStates(prev => prev.map(p => {
-        const sp = SYNTHETIC_PLAYERS.find(s => s.id === p.id)!
+        const sp = players.find(s => s.id === p.id)
+        if (!sp) return p
         const nextIdx = (p.posIndex + 1) % sp.positions.length
         return {
           ...p,
@@ -530,12 +541,13 @@ export default function HuntPage() {
       }))
     }, 4000)
     return () => clearInterval(interval)
-  }, [huntStarted, demoMode])
+  }, [huntStarted, demoMode, huntMonumentId])
 
   // ─── Synthetic player clue completion (auto-advance) ───
   useEffect(() => {
     if (!huntStarted || !demoMode) return
-    const timers = SYNTHETIC_PLAYERS.map((sp) => {
+    const players = MONUMENT_PLAYERS[huntMonumentId] || MONUMENT_PLAYERS['taj-mahal']
+    const timers = players.map((sp) => {
       return setInterval(() => {
         setPlayerStates(prev => prev.map(p => {
           if (p.id !== sp.id || p.cluesCompleted >= 5) return p
@@ -560,7 +572,7 @@ export default function HuntPage() {
     })
     return () => timers.forEach(clearInterval)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [huntStarted, demoMode])
+  }, [huntStarted, demoMode, huntMonumentId])
 
   // ─── Verify current clue location ───
   const verifyClueLocation = () => {
@@ -699,7 +711,7 @@ export default function HuntPage() {
                 const name = monumentList.find(m => m.id === id)?.name || id
                 setHuntMonumentId(id); setMonumentSelected(true); saveMonument(id, name)
                 setActiveClueIdx(0); setCompletedClues(new Set()); setXpEarned(0); setHuntCompleted(false);
-                setPlayerStates(makePlayers(id, newRiddles))
+                setPlayerStates(makePlayers(id))
                 setUserLat(start.lat); setUserLng(start.lng)
               }} value={huntMonumentId} style={{
                 padding: '12px 40px 12px 16px', background: 'rgba(28,22,56,0.9)',
