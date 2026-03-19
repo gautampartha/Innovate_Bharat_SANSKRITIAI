@@ -127,8 +127,7 @@ export async function addXP(
   eventType: string
 ): Promise<number> {
   try {
-    console.log('[addXP] called:', userId, xpDelta, eventType)
-
+    // READ current value from Supabase (not from state)
     const { data: current, error: selectErr } = await supabase
       .from('user_profiles')
       .select('total_xp')
@@ -136,35 +135,38 @@ export async function addXP(
       .single()
 
     if (selectErr) {
-      console.error('[addXP] SELECT failed:', selectErr.message, selectErr.details, selectErr.hint)
+      console.error('addXP SELECT failed:', selectErr.message)
       return 0
     }
 
     const currentXP = current?.total_xp ?? 0
     const newXP = currentXP + xpDelta
-    console.log('[addXP] currentXP:', currentXP, '→ newXP:', newXP)
 
+    // WRITE new value to Supabase
     const { error: updateErr } = await supabase
       .from('user_profiles')
       .update({ total_xp: newXP, updated_at: new Date().toISOString() })
       .eq('id', userId)
 
     if (updateErr) {
-      console.error('[addXP] UPDATE failed:', updateErr.message, updateErr.details, updateErr.hint)
+      console.error('addXP UPDATE failed:', updateErr.message)
       return 0
     }
 
-    console.log('[addXP] ✅ Supabase updated. newXP =', newXP)
-
+    // Fire and forget to backend
     fetch('https://heritageai-backend.onrender.com/game/xp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId, xp_delta: xpDelta, event_type: eventType })
     }).catch(() => {})
 
+    // Tell all components to re-fetch profile from Supabase
+    window.dispatchEvent(new Event('xp-updated'))
+
+    console.log(`✅ XP saved: ${currentXP} + ${xpDelta} = ${newXP}`)
     return newXP
   } catch (err) {
-    console.error('[addXP] EXCEPTION:', err)
+    console.error('❌ addXP failed:', err)
     return 0
   }
 }

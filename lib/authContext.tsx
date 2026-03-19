@@ -112,23 +112,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Re-fetch when window gets focus (tab switch back)
+  // Re-fetch on tab focus and xp-updated events
   useEffect(() => {
-    const handler = () => {
-      if (user?.id) fetchProfile(user.id)
+    const handler = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+        if (data) setProfile(data)
+      }
     }
     window.addEventListener('focus', handler)
-    return () => window.removeEventListener('focus', handler)
-  }, [user])
-
-  // Re-fetch when xp-updated event fires from any page
-  useEffect(() => {
-    const handler = () => {
-      if (user?.id) fetchProfile(user.id)
-    }
     window.addEventListener('xp-updated', handler)
-    return () => window.removeEventListener('xp-updated', handler)
-  }, [user])
+    return () => {
+      window.removeEventListener('focus', handler)
+      window.removeEventListener('xp-updated', handler)
+    }
+  }, [])
 
   // Safe setProfile that supports functional updates
   const safeSetProfile = useCallback(
