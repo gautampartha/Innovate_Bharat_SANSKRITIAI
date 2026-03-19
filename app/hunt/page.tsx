@@ -616,6 +616,8 @@ export default function HuntPage() {
   }
 
   // ─── Advance to next clue with clean state reset ───
+  // IMPORTANT: uses functional updater for setActiveClueIdx to avoid
+  // stale closure — prev always has the current live value.
   const advanceToNextClue = () => {
     // Reset all per-clue state FIRST so old clue content disappears
     setLocationVerified(false)
@@ -623,25 +625,30 @@ export default function HuntPage() {
     setShowHint(false)
     setUserDistance(null)
 
-    // Small delay so React re-renders the cleared state before new clue content mounts
+    // Use functional updater — prev is always the live current value,
+    // NOT the stale closure value captured when this function was created.
     setTimeout(() => {
-      if (activeClueIdx < activeRiddles.length - 1) {
-        setActiveClueIdx(prev => prev + 1)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        // Hunt completed!
-        setHuntCompleted(true)
-        try {
-          if (user?.id) {
-            addXP(user.id, 500, 'HUNT_COMPLETED').then(async (newXP) => {
-              setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
-              window.dispatchEvent(new Event('xp-updated'))
-              await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
-            }).catch(() => {})
-          }
-        } catch { /* silent */ }
-        showToast('+500 XP — Hunt Completed! 🏆')
-      }
+      setActiveClueIdx(prev => {
+        const next = prev + 1
+        if (next < activeRiddles.length) {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+          return next
+        } else {
+          // Last clue done — trigger completion (setTimeout to avoid state-in-state)
+          setTimeout(() => {
+            setHuntCompleted(true)
+            if (user?.id) {
+              addXP(user.id, 500, 'HUNT_COMPLETED').then(async (newXP) => {
+                setProfile((p: Record<string, unknown> | null) => p ? { ...p, total_xp: newXP } : p)
+                window.dispatchEvent(new Event('xp-updated'))
+                await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
+              }).catch(() => {})
+            }
+            showToast('+500 XP — Hunt Completed! 🏆')
+          }, 0)
+          return prev // keep idx at last clue until completion screen shows
+        }
+      })
     }, 300)
   }
 
