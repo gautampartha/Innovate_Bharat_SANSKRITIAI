@@ -620,74 +620,66 @@ export default function HuntPage() {
   // ─── On Clue Verified — single entry point, drives entire advance sequence ───
   const onClueVerified = async () => {
     if (!activeRiddle) return
-    if (isAdvancingRef.current) return  // prevent double-firing
-    isAdvancingRef.current = true       // lock immediately
+    if (isAdvancingRef.current) return
+    isAdvancingRef.current = true
 
-    // Show verified UI
+    // Show verified message
     setLocationVerified(true)
 
     const clueId = activeRiddle.id
-    const userName = user?.id || 'demo_user'
+    const xpAmount = 50
 
-    // Determine XP tier by arrival position
-    const pos = (clueCompletions[clueId] || []).length
-    let xpAmount = 10, medal = '👏 Participation'
-    if (pos === 0) { xpAmount = 50; medal = '🥇 First to find it!' }
-    else if (pos === 1) { xpAmount = 30; medal = '🥈 Second place!' }
-    else if (pos === 2) { xpAmount = 20; medal = '🥉 Third place!' }
-
-    // Update completions, XP display, toast
-    setClueCompletions(prev => ({ ...prev, [clueId]: [...(prev[clueId] || []), userName] }))
-    setXpEarned(prev => prev + xpAmount)
+    // Mark clue completed immediately
     setCompletedClues(prev => new Set([...prev, clueId]))
-    showToast(`${medal} +${xpAmount} XP`)
-    setCelebrateXp(xpAmount)
-    setCelebrateMedal(medal)
+    setXpEarned(prev => prev + xpAmount)
 
-    // Persist XP to Supabase (non-blocking)
+    // Award XP to Supabase — await it so we know it worked
     if (user?.id) {
-      addXP(user.id, xpAmount, 'HUNT_STEP_DONE').then(async newXP => {
-        setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
+      try {
+        const newXP = await addXP(user.id, xpAmount, 'HUNT_STEP_DONE')
+        setProfile((prev: any) => prev ? { ...prev, total_xp: newXP } : prev)
         window.dispatchEvent(new Event('xp-updated'))
-        await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
-      }).catch(() => {})
+        computeAndSaveBadges(user.id, { ...profile, total_xp: newXP }).catch(() => {})
+      } catch(e) {
+        console.error('XP award failed:', e)
+      }
     }
 
-    // After 1.2s clear celebration overlay
-    setTimeout(() => {
-      setCelebrateXp(null)
-      setCelebrateMedal('')
-    }, 1200)
+    // Show toast
+    showToast('🥇 First to find it! +' + xpAmount + ' XP')
 
-    // After 1.5s: reset per-clue state then advance index
+    // Wait 1.5s then advance to next clue
     setTimeout(() => {
-      // Step 1: hide verified message, show loading
+      // Hide verified message
       setLocationVerified(false)
       setCheckingGeo(false)
       setShowHint(false)
-      setUserDistance(null)
 
-      // Step 2: advance clue index
+      // Advance clue index using functional updater (no stale closure)
       setActiveClueIdx(prev => {
         const next = prev + 1
+
         if (next < activeRiddles.length) {
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-          setTimeout(() => { isAdvancingRef.current = false }, 500)
+          // More clues remaining
+          setTimeout(() => {
+            isAdvancingRef.current = false
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }, 200)
           return next
         } else {
-          // All clues done — show completion screen
-          setTimeout(() => {
+          // All clues done — hunt complete
+          setTimeout(async () => {
             setHuntCompleted(true)
             isAdvancingRef.current = false
+            // Bonus XP for completion
             if (user?.id) {
-              addXP(user.id, 500, 'HUNT_COMPLETED').then(async newXP => {
-                setProfile((p: Record<string, unknown> | null) => p ? { ...p, total_xp: newXP } : p)
+              try {
+                const newXP = await addXP(user.id, 500, 'HUNT_COMPLETED')
+                setProfile((p: any) => p ? { ...p, total_xp: newXP } : p)
                 window.dispatchEvent(new Event('xp-updated'))
-                await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
-              }).catch(() => {})
+              } catch(e) {}
             }
-            showToast('+500 XP — Hunt Completed! 🏆')
-          }, 0)
+          }, 200)
           return prev
         }
       })
@@ -1017,7 +1009,10 @@ export default function HuntPage() {
           <div className="w-full md:w-[40%] order-1 md:order-2 md:sticky md:top-[80px] flex flex-col">
 
             {/* Map container */}
-            <div style={{ width: '100%', height: '100%', minHeight: '460px', position: 'relative' }} className="rounded-xl overflow-hidden border border-[#C9A84C]/20 bg-[#1C1638]/90 z-0">
+            <div
+              className="w-full rounded-xl overflow-hidden border border-[#C9A84C]/20 bg-[#1C1638]/90 relative z-0"
+              style={{ height: '460px' }}
+            >
               <HuntMap
                 riddles={activeRiddles}
                 activeClueIdx={activeClueIdx}
