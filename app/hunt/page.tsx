@@ -602,15 +602,46 @@ export default function HuntPage() {
     )
   }
 
+  // ─── Advance to next clue with clean state reset ───
+  const advanceToNextClue = () => {
+    // Reset all per-clue state FIRST so old clue content disappears
+    setLocationVerified(false)
+    setCheckingGeo(false)
+    setShowHint(false)
+    setUserDistance(null)
+
+    // Small delay so React re-renders the cleared state before new clue content mounts
+    setTimeout(() => {
+      if (activeClueIdx < activeRiddles.length - 1) {
+        setActiveClueIdx(prev => prev + 1)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        // Hunt completed!
+        setHuntCompleted(true)
+        try {
+          if (user?.id) {
+            addXP(user.id, 500, 'HUNT_COMPLETED').then(async (newXP) => {
+              setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
+              window.dispatchEvent(new Event('xp-updated'))
+              await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
+            }).catch(() => {})
+          }
+        } catch { /* silent */ }
+        showToast('+500 XP — Hunt Completed! 🏆')
+      }
+    }, 300)
+  }
+
   // ─── On Clue Verified ───
   const onClueVerified = async () => {
+    if (!activeRiddle) return // Guard: never run if no active riddle
     setLocationVerified(true)
     const clueId = activeRiddle.id
     const userName = user?.id || 'demo_user'
 
     // Determine placement
     const currentCompleters = clueCompletions[clueId] || []
-    const position = currentCompleters.length // 0-indexed
+    const position = currentCompleters.length
     let xpAmount = 10
     let medal = ''
     if (position === 0) { xpAmount = 50; medal = '🥇 First to find it!' }
@@ -646,29 +677,11 @@ export default function HuntPage() {
     setCelebrateXp(xpAmount)
     setCelebrateMedal(medal)
 
-    // Auto-advance after 2s
+    // Auto-advance after celebration
     setTimeout(() => {
       setCelebrateXp(null)
       setCelebrateMedal('')
-      setLocationVerified(false)
-      setShowHint(false)
-
-      if (activeClueIdx < activeRiddles.length - 1) {
-        setActiveClueIdx(prev => prev + 1)
-      } else {
-        // Hunt completed!
-        setHuntCompleted(true)
-        try {
-          if (user?.id) {
-            addXP(user.id, 500, 'HUNT_COMPLETED').then(async (newXP) => {
-              setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
-              window.dispatchEvent(new Event('xp-updated'))
-              await computeAndSaveBadges(user.id, { ...profile, total_xp: newXP })
-            }).catch(() => {})
-          }
-        } catch { /* silent */ }
-        showToast('+500 XP — Hunt Completed! 🏆')
-      }
+      advanceToNextClue()
     }, 2000)
   }
 
