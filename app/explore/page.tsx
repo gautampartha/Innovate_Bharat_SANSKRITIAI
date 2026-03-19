@@ -342,7 +342,7 @@ export default function ExplorePage() {
       }))
     }, 1500)
     return () => clearInterval(interval)
-  }, [currentZoneIndex, arrivedAtZone, demoMode])
+  }, [currentZoneIndex, arrivedAtZone, demoMode, exploreMonumentId])
 
   // Reset distance when zone changes + auto-speak direction hint
   useEffect(() => {
@@ -354,7 +354,7 @@ export default function ExplorePage() {
       speakFact(activeZones[currentZoneIndex].direction_hint)
     }, 1000)
     return () => { clearTimeout(timer); window.speechSynthesis?.cancel() }
-  }, [currentZoneIndex, speakFact])
+  }, [currentZoneIndex, speakFact, exploreMonumentId])
 
   // ── HANDLE ARRIVAL ──────────────────────────────────────
   const handleArrival = useCallback(async () => {
@@ -454,13 +454,41 @@ export default function ExplorePage() {
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
             <div>
-              <h1 style={{ color: '#C9A84C', fontFamily: 'Georgia,serif', fontSize: '24px', margin: 0 }}>
-                🏛️ {MONUMENT_NAMES[exploreMonumentId] || 'Monument'} Explorer
-              </h1>
+              {/* Monument Switcher */}
+              <div style={{ position: 'relative', display: 'inline-block', marginBottom: 4 }}>
+                <select
+                  value={exploreMonumentId}
+                  onChange={e => {
+                    const id = e.target.value
+                    const name = monumentsList.find(m => m.id === id)?.name || id
+                    // Cancel any ongoing narration first
+                    window.speechSynthesis?.cancel()
+                    setIsTTSSpeaking(false)
+                    if (isCallActive) endCall()
+                    // Reset all zone state
+                    setExploreMonumentId(id); saveMonument(id, name)
+                    setCurrentZoneIndex(0); setCompletedZones([]); setXpEarned(0)
+                    setExplorerComplete(false); setArrivedAtZone(false); setShowFact(false)
+                    const newStart = EXPLORE_USER_START[id] || EXPLORE_USER_START['taj-mahal']
+                    setUserPos(newStart)
+                    setDemoDistance(Math.floor(Math.random() * 150) + 150)
+                  }}
+                  style={{
+                    fontFamily: 'Georgia,serif', fontSize: '22px', fontWeight: 700,
+                    color: '#C9A84C', background: 'transparent', border: 'none',
+                    paddingRight: 24, cursor: 'pointer', appearance: 'none' as const,
+                    outline: 'none'
+                  }}
+                >
+                  {monumentsList.map(m => <option key={m.id} value={m.id} style={{ background: '#1C1638', color: '#C9A84C' }}>🏛️ {m.name} Explorer</option>)}
+                </select>
+                <ChevronDown style={{ position: 'absolute', right: 0, top: 6, width: 14, height: 14, color: '#C9A84C', pointerEvents: 'none' }} />
+              </div>
               <p style={{ color: '#C4A882', fontSize: '13px', margin: '4px 0 0' }}>
                 Zone {currentZoneIndex + 1} of {activeZones.length}
               </p>
             </div>
+
             {/* Voice guide toggle */}
             {!isCallActive ? (
               <button onClick={() => startCall(`${MONUMENT_NAMES[exploreMonumentId] || 'Monument'} Entrance`, exploreMonumentId)} style={{
