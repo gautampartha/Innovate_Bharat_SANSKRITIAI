@@ -38,6 +38,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" />
+      </head>
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-[#0F0B1E] text-[#F5E6D3]`}>
         <AuthProvider>
           <AuthGuard>
