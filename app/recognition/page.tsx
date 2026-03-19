@@ -89,24 +89,22 @@ export default function RecognitionPage() {
     }
     previewReader.readAsDataURL(file)
 
-    // Compress image before sending (max 800px, 70% quality → ~100-200KB vs 3-5MB raw)
-    const compressImage = (f: File): Promise<string> => new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX = 800
-        let w = img.width, h = img.height
-        if (w > MAX || h > MAX) {
-          if (w > h) { h = Math.round(h * MAX / w); w = MAX }
-          else { w = Math.round(w * MAX / h); h = MAX }
-        }
+    const compressImage = (f: File): Promise<string> => {
+      return new Promise((resolve) => {
         const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
-        resolve(dataUrl.split(',')[1])
-      }
-      img.src = URL.createObjectURL(f)
-    })
+        const img = new Image()
+        img.onload = () => {
+          const maxW = 600
+          const scale = Math.min(1, maxW / img.width)
+          canvas.width = img.width * scale
+          canvas.height = img.height * scale
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          resolve(canvas.toDataURL('image/jpeg', 0.6).split(',')[1])
+        }
+        img.src = URL.createObjectURL(f)
+      })
+    }
 
     const cacheKey = getImageCacheKey(file)
     const cached = getCache(cacheKey, CACHE_DURATION.recognition)

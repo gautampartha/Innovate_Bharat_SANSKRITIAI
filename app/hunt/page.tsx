@@ -826,11 +826,39 @@ export default function HuntPage() {
               </div>
             )}
 
-            {/* Progress bar */}
+            {/* Monument switcher + progress */}
             <div className="flex items-center justify-between">
-              <h1 className="font-serif text-xl md:text-2xl text-[#C9A84C] font-bold m-0">
-                {t('treasure_hunt')}
-              </h1>
+              <div>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <select
+                    value={huntMonumentId}
+                    onChange={e => {
+                      const id = e.target.value
+                      const name = monuments.find(m => m.id === id)?.name || id
+                      const start = MONUMENT_USER_START[id] || MONUMENT_USER_START['taj-mahal']
+                      setHuntMonumentId(id); saveMonument(id, name)
+                      setActiveClueIdx(0); setCompletedClues(new Set()); setXpEarned(0); setHuntCompleted(false)
+                      setPlayerStates(makePlayers(id))
+                      setUserLat(start.lat); setUserLng(start.lng)
+                      setLocationVerified(false); setShowHint(false); setClueCompletions({})
+                    }}
+                    style={{
+                      fontFamily: 'Georgia,serif', fontSize: '20px', fontWeight: 700,
+                      color: '#C9A84C', background: 'transparent', border: 'none',
+                      paddingRight: 22, cursor: 'pointer', appearance: 'none' as const,
+                      outline: 'none'
+                    }}
+                  >
+                    {monuments.map(m => (
+                      <option key={m.id} value={m.id} style={{ background: '#1C1638', color: '#C9A84C' }}>
+                        🗺️ {m.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown style={{ position: 'absolute', right: 0, top: 7, width: 13, height: 13, color: '#C9A84C', pointerEvents: 'none' }} />
+                </div>
+                <p className="text-[#C4A882] text-xs m-0 mt-0.5">{t('treasure_hunt')}</p>
+              </div>
               <div className="flex items-center gap-2 md:gap-3">
                 <span className="text-[#F5E6D3] text-sm md:text-base font-semibold">Clue {activeClueIdx + 1} of {activeRiddles.length}</span>
                 <span className="px-3 py-1.5 bg-[#C9A84C]/15 rounded-full text-[#C9A84C] text-[11px] md:text-[13px] font-bold">⚡ {xpEarned} XP</span>
