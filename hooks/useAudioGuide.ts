@@ -147,6 +147,11 @@ export function useAudioGuide(): UseAudioGuideReturn {
   // ── SPEECH TO TEXT ─────────────────────────────────────
   const startListening = useCallback(async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Microphone recording is blocked by your browser on unencrypted connections. Please use localhost or HTTPS.')
+        setIsListening(false)
+        return
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mediaRecorder = new MediaRecorder(stream)
       

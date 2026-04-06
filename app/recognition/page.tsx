@@ -34,10 +34,18 @@ const MONUMENT_NAMES: Record<string, string> = {
 const CONFIDENCE_THRESHOLD = 0.65
 
 async function hashFile(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer()
-  const digest = await crypto.subtle.digest('SHA-256', buffer)
-  const bytes = new Uint8Array(digest)
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    try {
+      const buffer = await file.arrayBuffer()
+      const digest = await crypto.subtle.digest('SHA-256', buffer)
+      const bytes = new Uint8Array(digest)
+      return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+    } catch (e) {
+      // Fallback on error
+    }
+  }
+  // Fallback for non-secure contexts (e.g. mobile over local HTTP IP where WebCrypto is blocked)
+  return `fallback_${file.name.replace(/[^a-zA-Z0-9]/g, '')}_${file.size}_${file.lastModified}`
 }
 
 function suggestMonuments(baseName?: string): string[] {
@@ -243,7 +251,7 @@ export default function RecognitionPage() {
         try {
           if (user) {
             const newXP = await addXP(user.id, 25, 'MONUMENT_VISIT')
-            setProfile((prev: Record<string, unknown> | null) => prev ? { ...prev, total_xp: newXP } : prev)
+            setProfile((prev: any) => prev ? { ...prev, total_xp: newXP } : prev)
             const newVisited = await addMonumentVisited(user.id, res.data.monument_name)
             await computeAndSaveBadges(user.id, { total_xp: newXP, monuments_visited: newVisited })
             window.dispatchEvent(new Event('xp-updated'))

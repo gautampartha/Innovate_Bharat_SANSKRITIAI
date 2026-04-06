@@ -189,6 +189,27 @@ export const TRANSLATIONS: Record<string, { en: string; hi: string }> = {
   student: { en: 'Student', hi: 'छात्र' }, tourist: { en: 'Tourist', hi: 'पर्यटक' },
   // Common
   loading: { en: 'Loading Sanskriti AI...', hi: 'संस्कृति AI लोड हो रहा है...' },
+  // Home Page new
+  good_evening: { en: 'Good evening', hi: 'शुभ संध्या' },
+  explorer: { en: 'Explorer', hi: 'अन्वेषणकर्ता' },
+  hero_caption_default: { en: 'Explore India through monuments, hunts, and live scans.', hi: 'स्मारकों, खोजों और लाइव स्कैन के माध्यम से भारत का अन्वेषण करें।' },
+  offline_ready: { en: 'Offline ready', hi: 'ऑफ़लाइन एक्सेस' },
+  nav_scan: { en: 'Scan', hi: 'स्कैन' },
+  quick_actions: { en: 'Quick actions', hi: 'त्वरित कार्य' },
+  view_profile: { en: 'View profile', hi: 'प्रोफ़ाइल देखें' },
+  scan_monument: { en: 'Scan Monument', hi: 'स्मारक स्कैन करें' },
+  scan_monument_desc: { en: 'Camera-first recognition with narration', hi: 'विवरण के साथ कैमरा-आधारित पहचान' },
+  explore_title: { en: 'Explore', hi: 'अन्वेषण करें' },
+  explore_desc: { en: 'Discover monuments, routes, and live map guidance', hi: 'स्मारक, मार्ग और मैप मार्गदर्शन खोजें' },
+  start_hunt: { en: 'Start Treasure Hunt', hi: 'खजाना खोज शुरू करें' },
+  start_hunt_desc: { en: 'Checkpoints, XP, and reward bursts', hi: 'चेकपॉइंट, XP और पुरस्कार' },
+  plan_itinerary: { en: 'Plan Itinerary', hi: 'यात्रा की योजना बनाएं' },
+  plan_itinerary_desc: { en: 'Create route across Delhi, Agra, Jaipur', hi: 'दिल्ली, आगरा, जयपुर के पार मार्ग बनाएं' },
+  explore_now: { en: 'Explore now', hi: 'अभी खोजें' },
+  festivals_title: { en: 'Festivals', hi: 'उत्सव' },
+  calendar_link: { en: 'Calendar', hi: 'कैलेंडर' },
+  continue_learning: { en: 'Continue learning', hi: 'सीखना जारी रखें' },
+  quiz_link: { en: 'Quiz', hi: 'क्विज़' },
 }
 
 type LangUpdater = Lang | ((prev: Lang) => Lang)

@@ -6,7 +6,9 @@ import { MapView } from '@/components/mobile/map-view'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/authContext'
 import { useUser } from '@/lib/userContext'
+import { useLang } from '@/lib/languageContext'
 import { Sparkles, Camera, Route, Trophy, ArrowRight, MessageCircle } from 'lucide-react'
+
 
 const nearbyMonuments = [
   { name: 'Taj Mahal', location: 'Agra', badge: 'Trending' },
@@ -29,6 +31,7 @@ const learningQueue = [
 export default function HomePage() {
   const { profile } = useAuth()
   const { userType, userConfig, setUserType } = useUser()
+  const { t } = useLang()
 
   return (
     <AppShell>
@@ -37,9 +40,9 @@ export default function HomePage() {
           <div className="space-y-4 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#C9A84C]">Good evening</p>
-                <h2 className="mt-1 text-2xl font-semibold text-[#F5E6D3]">{profile?.full_name || 'Explorer'}</h2>
-                <p className="mt-1 text-sm text-[#D9C7AA]">{userConfig?.subtitle || 'Explore India through monuments, hunts, and live scans.'}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#C9A84C]">{t('good_evening')}</p>
+                <h2 className="mt-1 text-2xl font-semibold text-[#F5E6D3]">{profile?.full_name || t('explorer')}</h2>
+                <p className="mt-1 text-sm text-[#D9C7AA]">{userConfig?.subtitle || t('hero_caption_default')}</p>
               </div>
               <div className="rounded-[20px] border border-[#C9A84C]/18 bg-black/20 px-3 py-2 text-right backdrop-blur-md">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[#A89A7D]">XP</p>
@@ -49,10 +52,10 @@ export default function HomePage() {
 
             <div className="flex flex-wrap gap-2">
               <button className="rounded-full border border-[#C9A84C]/20 bg-[#C9A84C]/12 px-3 py-1 text-xs font-semibold text-[#F7D88C]" onClick={() => setUserType(userType === 'student' ? 'tourist' : 'student')}>
-                {userType === 'student' ? 'Student mode' : 'Tourist mode'}
+                {userType === 'student' ? t('student_mode') : t('tourist_mode')}
               </button>
               <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-[#D9C7AA]">
-                Offline ready
+                {t('offline_ready')}
               </button>
             </div>
           </div>
@@ -60,9 +63,9 @@ export default function HomePage() {
 
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Scan', href: '/recognition', icon: Camera },
-            { label: 'Explore', href: '/explore', icon: Route },
-            { label: 'Hunt', href: '/hunt', icon: Trophy },
+            { label: t('nav_scan'), href: '/recognition', icon: Camera },
+            { label: t('nav_explore'), href: '/explore', icon: Route },
+            { label: t('nav_hunt'), href: '/hunt', icon: Trophy },
           ].map((item) => (
             <Link key={item.label} href={item.href} className="app-card flex flex-col items-start gap-3 rounded-[20px] p-3 transition-transform active:scale-95">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#C9A84C]/12 text-[#F7D88C]"><item.icon className="h-4 w-4" /></span>
@@ -72,8 +75,8 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#F5E6D3]">Quick actions</h2>
-          <Link href="/profile" className="text-sm text-[#F7D88C]">View profile</Link>
+          <h2 className="text-lg font-semibold text-[#F5E6D3]">{t('quick_actions')}</h2>
+          <Link href="/profile" className="text-sm text-[#F7D88C]">{t('view_profile')}</Link>
         </div>
 
         <div className="grid gap-3">
@@ -81,8 +84,8 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#C9A84C]/12 text-[#F7D88C]"><Camera className="h-5 w-5" /></div>
               <div>
-                <p className="font-semibold text-[#F5E6D3]">Scan Monument</p>
-                <p className="text-sm text-[#C4A882]">Camera-first recognition with narration</p>
+                <p className="font-semibold text-[#F5E6D3]">{t('scan_monument')}</p>
+                <p className="text-sm text-[#C4A882]">{t('scan_monument_desc')}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-[#C9A84C]" />
@@ -92,8 +95,8 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4B9B8E]/12 text-[#7EE4D4]"><Route className="h-5 w-5" /></div>
               <div>
-                <p className="font-semibold text-[#F5E6D3]">Explore</p>
-                <p className="text-sm text-[#C4A882]">Discover monuments, routes, and live map guidance</p>
+                <p className="font-semibold text-[#F5E6D3]">{t('explore_title')}</p>
+                <p className="text-sm text-[#C4A882]">{t('explore_desc')}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-[#C9A84C]" />
@@ -103,8 +106,8 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#534AB7]/15 text-[#AFA7FF]"><Sparkles className="h-5 w-5" /></div>
               <div>
-                <p className="font-semibold text-[#F5E6D3]">Start Treasure Hunt</p>
-                <p className="text-sm text-[#C4A882]">Checkpoints, XP, and reward bursts</p>
+                <p className="font-semibold text-[#F5E6D3]">{t('start_hunt')}</p>
+                <p className="text-sm text-[#C4A882]">{t('start_hunt_desc')}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-[#C9A84C]" />
@@ -112,11 +115,11 @@ export default function HomePage() {
         </div>
 
         <MapView
-          title="Plan Itinerary"
-          subtitle="Create route across Delhi, Agra, Jaipur"
+          title={t('plan_itinerary')}
+          subtitle={t('plan_itinerary_desc')}
           action={
             <Button asChild size="sm" className="rounded-full bg-[#C9A84C] px-3 text-[#0E0916]">
-              <Link href="/explore">Explore now</Link>
+              <Link href="/explore">{t('explore_now')}</Link>
             </Button>
           }
         >
@@ -133,8 +136,8 @@ export default function HomePage() {
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#F5E6D3]">Festivals</h2>
-            <Link href="/festivals" className="text-sm text-[#F7D88C]">Calendar</Link>
+            <h2 className="text-lg font-semibold text-[#F5E6D3]">{t('festivals_title')}</h2>
+            <Link href="/festivals" className="text-sm text-[#F7D88C]">{t('calendar_link')}</Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-1 app-scroll-row">
             {festivals.map((item) => (
@@ -149,8 +152,8 @@ export default function HomePage() {
 
         <section className="space-y-3 safe-bottom-space">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#F5E6D3]">Continue learning</h2>
-            <Link href="/quiz" className="text-sm text-[#F7D88C]">Quiz</Link>
+            <h2 className="text-lg font-semibold text-[#F5E6D3]">{t('continue_learning')}</h2>
+            <Link href="/quiz" className="text-sm text-[#F7D88C]">{t('quiz_link')}</Link>
           </div>
           <div className="space-y-3">
             {learningQueue.map((item) => (

@@ -7,6 +7,7 @@ import { AppShell } from "@/components/app-shell"
 import { useAuth } from "@/lib/authContext"
 import { addXP, computeAndSaveBadges } from "@/lib/authClient"
 import { useVapi } from "@/hooks/useVapi"
+import { useLang } from "@/lib/languageContext"
 
 import { ChevronDown } from "lucide-react"
 import { getMonument, saveMonument } from "@/lib/monumentStore"
@@ -272,6 +273,7 @@ export default function ExplorePage() {
   const router = useRouter()
   const { user, profile, setProfile } = useAuth()
   const { isCallActive, isSpeaking, startCall, endCall, sendZoneContext } = useVapi()
+  const { lang } = useLang()
 
   const [currentZoneIndex, setCurrentZoneIndex] = useState(0)
   const [arrivedAtZone, setArrivedAtZone] = useState(false)
@@ -450,7 +452,7 @@ export default function ExplorePage() {
           background: 'rgba(201,168,76,0.15)', borderBottom: '1px solid rgba(201,168,76,0.3)',
           padding: '8px 16px', textAlign: 'center', color: '#C9A84C', fontSize: '12px', fontWeight: 600
         }}>
-          🎮 DEMO MODE — Synthetic GPS active | Press &quot;I&apos;ve Arrived&quot; at any distance to explore
+          {lang === 'hi' ? '🎮 डेमो मोड — सिंथेटिक GPS सक्रिय | अन्वेषण करने के लिए किसी भी दूरी पर "मैं पहुँच गया" दबाएँ' : '🎮 DEMO MODE — Synthetic GPS active | Press "I\'ve Arrived" at any distance to explore'}
         </div>
       )}
 
@@ -484,12 +486,12 @@ export default function ExplorePage() {
                     outline: 'none'
                   }}
                 >
-                  {monumentsList.map(m => <option key={m.id} value={m.id} style={{ background: '#1C1638', color: '#C9A84C' }}>🏛️ {m.name} Explorer</option>)}
+                  {monumentsList.map(m => <option key={m.id} value={m.id} style={{ background: '#1C1638', color: '#C9A84C' }}>🏛️ {m.name} {lang === 'hi' ? 'अन्वेषक' : 'Explorer'}</option>)}
                 </select>
                 <ChevronDown style={{ position: 'absolute', right: 0, top: 6, width: 14, height: 14, color: '#C9A84C', pointerEvents: 'none' }} />
               </div>
               <p style={{ color: '#C4A882', fontSize: '13px', margin: '4px 0 0' }}>
-                Zone {currentZoneIndex + 1} of {activeZones.length}
+                {lang === 'hi' ? 'ज़ोन' : 'Zone'} {currentZoneIndex + 1} / {activeZones.length}
               </p>
             </div>
 
@@ -500,7 +502,7 @@ export default function ExplorePage() {
                 padding: '10px 16px', color: '#0F0B1E', fontWeight: '700', fontSize: '13px',
                 border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px'
               }}>
-                📞 Start Voice Guide
+                📞 {lang === 'hi' ? 'वॉयस गाइड शुरू करें' : 'Start Voice Guide'}
               </button>
             ) : (
               <button onClick={endCall} style={{
@@ -508,7 +510,7 @@ export default function ExplorePage() {
                 color: 'white', fontWeight: '700', fontSize: '13px', border: 'none',
                 cursor: 'pointer', animation: 'pulse 2s infinite'
               }}>
-                📵 End Voice Guide
+                📵 {lang === 'hi' ? 'वॉयस गाइड समाप्त करें' : 'End Voice Guide'}
               </button>
             )}
           </div>
@@ -551,7 +553,7 @@ export default function ExplorePage() {
                 {zone.emoji} {zone.name}
               </h2>
               <p style={{ color: '#C4A882', fontSize: '12px', marginBottom: '16px' }}>
-                Zone {currentZoneIndex + 1} of {activeZones.length} • +{zone.xp} XP on arrival
+                {lang === 'hi' ? 'ज़ोन' : 'Zone'} {currentZoneIndex + 1} / {activeZones.length} • +{zone.xp} XP {lang === 'hi' ? 'आगमन पर' : 'on arrival'}
               </p>
 
               {/* Direction hint */}
@@ -585,7 +587,7 @@ export default function ExplorePage() {
                     {demoDistance}m
                   </div>
                   <div style={{ color: '#C4A882', fontSize: '14px', marginTop: '4px' }}>
-                    {demoDistance > 100 ? '🚶 Keep walking...' : demoDistance > 30 ? '📍 Getting close!' : '✅ You are here!'}
+                    {demoDistance > 100 ? (lang === 'hi' ? '🚶 चलते रहें...' : '🚶 Keep walking...') : demoDistance > 30 ? (lang === 'hi' ? '📍 करीब आ रहे हैं!' : '📍 Getting close!') : (lang === 'hi' ? '✅ आप यहाँ हैं!' : '✅ You are here!')}
                   </div>
                 </div>
               </div>
@@ -601,7 +603,7 @@ export default function ExplorePage() {
                   border: 'none', cursor: arrivedAtZone ? 'default' : 'pointer',
                 }}
               >
-                {arrivedAtZone ? '✅ Arrived!' : "📍 I've Arrived!"}
+                {arrivedAtZone ? (lang === 'hi' ? '✅ पहुँच गए!' : '✅ Arrived!') : (lang === 'hi' ? "📍 मैं पहुँच गया!" : "📍 I've Arrived!")}
               </button>
             </div>
           )}
@@ -619,7 +621,7 @@ export default function ExplorePage() {
                 gap: '6px', marginBottom: '16px'
               }}>
                 <span style={{ fontSize: '16px' }}>⚡</span>
-                <span style={{ color: '#0F0B1E', fontWeight: '700' }}>+{xpEarned} XP Earned!</span>
+                <span style={{ color: '#0F0B1E', fontWeight: '700' }}>+{xpEarned} XP {lang === 'hi' ? 'प्राप्त किए!' : 'Earned!'}</span>
               </div>
 
               <h3 style={{ color: '#C9A84C', fontFamily: 'Georgia,serif', fontSize: '20px', marginBottom: '12px' }}>
@@ -689,7 +691,7 @@ export default function ExplorePage() {
                     border: 'none', cursor: 'pointer', width: '100%'
                   }}
                 >
-                  Next Zone: {activeZones[currentZoneIndex + 1].emoji} {activeZones[currentZoneIndex + 1].name} →
+                  {lang === 'hi' ? 'अगला ज़ोन' : 'Next Zone'}: {activeZones[currentZoneIndex + 1].emoji} {activeZones[currentZoneIndex + 1].name} →
                 </button>
               ) : (
                 <button
@@ -700,7 +702,7 @@ export default function ExplorePage() {
                     border: 'none', cursor: 'pointer', width: '100%'
                   }}
                 >
-                  🎉 Complete Explorer!
+                  🎉 {lang === 'hi' ? 'अन्वेषक पूर्ण!' : 'Complete Explorer!'}
                 </button>
               )}
             </div>

@@ -30,8 +30,8 @@ export function TopBar() {
             <Image src="/sanskriti-logo.svg" alt="Sanskriti AI logo" width={40} height={40} className="h-full w-full object-cover" priority />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold tracking-tight text-[#F5E6D3]">Sanskriti AI</p>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-[#8C7B63]">Living Heritage</p>
+            <p className="truncate text-[15px] font-bold tracking-tight text-[#F5E6D3]">{lang === 'hi' ? 'संस्कृति AI' : 'Sanskriti AI'}</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-[#8C7B63]">{lang === 'hi' ? 'जीवित विरासत' : 'Living Heritage'}</p>
           </div>
         </Link>
 

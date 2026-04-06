@@ -230,7 +230,7 @@ export default function ChatPage() {
                   opacity: vapiLoading ? 0.7 : 1
                 }}
               >
-                📞 {vapiLoading ? 'Connecting...' : 'Voice Call'}
+                📞 {vapiLoading ? (lang === 'hi' ? 'कनेक्ट हो रहा है...' : 'Connecting...') : (lang === 'hi' ? 'वॉयस कॉल' : 'Voice Call')}
               </button>
             ) : (
               <button
@@ -244,7 +244,7 @@ export default function ChatPage() {
                   animation: 'pulse 2s infinite'
                 }}
               >
-                📵 End Call
+                📵 {lang === 'hi' ? 'कॉल समाप्त करें' : 'End Call'}
               </button>
             )}
           </div>
@@ -303,9 +303,9 @@ export default function ChatPage() {
                 animation: (vapiSpeaking || vapiListening) ? 'pulse 1s infinite' : 'none'
               }}/>
               <span style={{ color: '#C9A84C', fontSize: '13px' }}>
-                {vapiSpeaking ? '🔊 AI is speaking...'
-                 : vapiListening ? '🎤 Listening...'
-                 : '💬 Voice call active — speak your question'}
+                {vapiSpeaking ? (lang === 'hi' ? '🔊 AI बोल रहा है...' : '🔊 AI is speaking...')
+                 : vapiListening ? (lang === 'hi' ? '🎤 सुन रहा है...' : '🎤 Listening...')
+                 : (lang === 'hi' ? '💬 वॉयस कॉल सक्रिय - अपना प्रश्न बोलें' : '💬 Voice call active — speak your question')}
               </span>
               {transcript && (
                 <span style={{ color: '#C4A882', fontSize: '12px', fontStyle: 'italic' }}>

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Vapi from '@vapi-ai/web'
+import { useLang } from '@/lib/languageContext'
 
 interface Message {
   role: 'user' | 'assistant' | 'zone'
@@ -26,7 +27,8 @@ interface UseVapiReturn {
 
 export function useVapi(): UseVapiReturn {
   const vapiRef = useRef<Vapi | null>(null)
-  
+  const { lang, t } = useLang()
+
   const [isCallActive, setIsCallActive] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -115,9 +117,9 @@ export function useVapi(): UseVapiReturn {
         if (lastMsg?.role === 'assistant' && lastMsg?.content) {
           setMessages(prev => {
             const alreadyExists = prev.some(
-              m => m.role === 'assistant' && 
-              m.text === lastMsg.content &&
-              Date.now() - m.timestamp < 3000
+              m => m.role === 'assistant' &&
+                m.text === lastMsg.content &&
+                Date.now() - m.timestamp < 3000
             )
             if (alreadyExists) return prev
             return [...prev, {
@@ -186,23 +188,26 @@ export function useVapi(): UseVapiReturn {
     setError(null)
 
     const zoneContext = zoneName
-      ? `The visitor is currently at: ${zoneName}. Monument: ${
-          monumentId?.replace(/-/g, ' ') || 'Indian heritage site'
-        }. Greet them and tell them something fascinating about 
+      ? `The visitor is currently at: ${zoneName}. Monument: ${monumentId?.replace(/-/g, ' ') || 'Indian heritage site'
+      }. Greet them and tell them something fascinating about 
         where they are standing right now.`
       : `The visitor has just opened the heritage guide app. 
         Welcome them warmly and ask which monument they would 
         like to learn about today.`
 
+    const languageInstruction = lang === 'hi'
+      ? "\nCRITICAL RULE: You MUST speak entirely in Hindi (हिंदी). All your responses, thoughts and facts must be in Hindi."
+      : "\nCRITICAL RULE: You MUST speak entirely in English."
+
     vapi.start(assistantId, {
       variableValues: {
-        zone_context: zoneContext,
+        zone_context: zoneContext + languageInstruction,
         monument_id: monumentId || 'general',
         zone_name: zoneName || 'Heritage Explorer'
       }
     })
 
-  }, [])
+  }, [lang])
 
   // ── END CALL ─────────────────────────────────────────────
   const endCall = useCallback(() => {
