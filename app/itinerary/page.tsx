@@ -145,7 +145,7 @@ export default function ItineraryPage() {
 
     // Step B — Supabase (silent fail)
     try {
-      supabase.from('leads').insert(leadData).then(() => {}).catch(() => {})
+      supabase.from('leads').insert(leadData).then(() => {}, () => {})
     } catch { /* silent */ }
 
     // Step C — console only

@@ -27,3 +27,5 @@ export const api = {
   leadCapture: (payload: Record<string, unknown>) =>
     apiClient.post("/leads/capture", payload),
 };
+
+export default api;

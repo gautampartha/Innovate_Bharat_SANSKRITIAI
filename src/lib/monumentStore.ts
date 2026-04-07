@@ -209,3 +209,45 @@ export const monuments: Monument[] = [
 
 export const monumentById = (id: string) =>
   monuments.find((m) => m.id === id) ?? monuments[0];
+
+type StoredMonument = {
+  id: string;
+  name: string;
+  timestamp: number;
+};
+
+const STORAGE_KEY = "sanskriti_last_monument";
+
+export function saveMonument(id: string, name: string) {
+  try {
+    const payload: StoredMonument = { id, name, timestamp: Date.now() };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    return;
+  }
+}
+
+export function getMonument(): StoredMonument | null {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredMonument;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function clearMonument() {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    return;
+  }
+}
+
+export function monumentNameToId(name: string): string {
+  const found = monuments.find((m) => m.name.toLowerCase() === name.toLowerCase());
+  if (found) return found.id;
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
