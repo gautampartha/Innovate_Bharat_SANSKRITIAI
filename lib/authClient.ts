@@ -93,3 +93,17 @@ export async function saveChatMessage(_userId: string, role: string, content: st
     ].slice(-100),
   }))
 }
+
+export const authClient = {
+  signUp,
+  signIn,
+  signOut,
+  getCurrentUser,
+  getUserProfile,
+  updateUserProfile,
+  addXP,
+  addMonumentVisited,
+  addQuizScore,
+  computeAndSaveBadges,
+  saveChatMessage,
+}

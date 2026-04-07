@@ -6,6 +6,7 @@ export interface LocalUser {
 export interface LocalProfile {
   full_name: string
   email: string
+  phone?: string
   total_xp: number
   monuments_visited: string[]
   quiz_scores: number[]
@@ -28,6 +29,7 @@ const DEFAULT_USER: LocalUser = {
 const DEFAULT_PROFILE: LocalProfile = {
   full_name: 'Explorer',
   email: DEFAULT_USER.email,
+  phone: '',
   total_xp: 120,
   monuments_visited: [],
   quiz_scores: [],

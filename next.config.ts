@@ -1,11 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
+  onDemandEntries: {
+    maxInactiveAge: 60_000,
+    pagesBufferLength: 2,
+  },
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
   },
 };
 
