@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/lib/authContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { useLang } from "@/lib/languageContext";
@@ -26,7 +26,6 @@ type SignUpValues = z.infer<typeof signUpSchema>;
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
   const { t, lang } = useLang();
-  const toast = useToast();
   const router = useRouter();
 
   const signInForm = useForm<SignInValues>({ resolver: zodResolver(signInSchema) });
