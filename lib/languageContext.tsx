@@ -187,6 +187,20 @@ export const TRANSLATIONS: Record<string, { en: string; hi: string }> = {
   my_achievements: { en: '🏅 Achievements', hi: '🏅 उपलब्धियाँ' },
   my_itinerary: { en: '🗺️ My Itinerary', hi: '🗺️ मेरी यात्रा योजना' },
   student: { en: 'Student', hi: 'छात्र' }, tourist: { en: 'Tourist', hi: 'पर्यटक' },
+  // Profile Page
+  profile_title: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+  profile_subtitle: { en: 'Your XP, badges, and settings live here.', hi: 'आपके XP, बैज और सेटिंग्स यहाँ हैं।' },
+  visited_label: { en: 'Visited', hi: 'देखे गए' },
+  badges_label: { en: 'Badges', hi: 'बैज' },
+  rank_label: { en: 'Rank', hi: 'रैंक' },
+  current_level: { en: 'Current level', hi: 'वर्तमान स्तर' },
+  language_label: { en: 'Language', hi: 'भाषा' },
+  mode_title: { en: 'Mode', hi: 'मोड' },
+  mode_switch: { en: 'Switch', hi: 'बदलें' },
+  mode_subtitle: { en: 'Toggle between learning and travel-focused guidance.', hi: 'सीखने और यात्रा-आधारित मार्गदर्शन के बीच टॉगल करें।' },
+  offline_ui_title: { en: 'Offline-first UI', hi: 'ऑफ़लाइन-फर्स्ट UI' },
+  offline_ui_desc: { en: 'Core screens stay usable with cached data and local state.', hi: 'कैश किए गए डेटा और स्थानीय स्थिति के साथ मुख्य स्क्रीन उपयोग योग्य रहते हैं।' },
+  continue_exploring: { en: 'Continue exploring', hi: 'अन्वेषण जारी रखें' },
   // Common
   loading: { en: 'Loading Sanskriti AI...', hi: 'संस्कृति AI लोड हो रहा है...' },
   // Home Page new

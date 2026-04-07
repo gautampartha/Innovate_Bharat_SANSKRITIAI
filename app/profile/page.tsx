@@ -1,14 +1,13 @@
 "use client"
 
 import { useMemo } from 'react'
-import { useTheme } from 'next-themes'
 import { AppShell } from '@/components/app-shell'
 import { AppCard } from '@/components/mobile/app-card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/authContext'
 import { useLang } from '@/lib/languageContext'
 import { useUser } from '@/lib/userContext'
-import { BadgeCheck, Globe, MoonStar, Flame, Trophy, MapPinned, ChevronRight } from 'lucide-react'
+import { BadgeCheck, Globe, Flame, Trophy, MapPinned, ChevronRight } from 'lucide-react'
 
 const LEVELS = [
   { min: 0, max: 499, title: 'Heritage Explorer', next: 500 },
@@ -31,9 +30,8 @@ function getLevel(xp: number) {
 
 export default function ProfilePage() {
   const { profile } = useAuth()
-  const { lang, toggleLang } = useLang()
+  const { lang, toggleLang, t } = useLang()
   const { userType, setUserType, userConfig } = useUser()
-  const { theme, setTheme } = useTheme()
 
   const safeProfile = profile || {
     full_name: 'Explorer',
@@ -64,9 +62,9 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3">
                 <div className="flex h-14 w-14 items-center justify-center rounded-[22px] border border-[#C9A84C]/22 bg-black/25 text-lg font-semibold text-[#F7D88C]">{initials}</div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#8C7B63]">Profile</p>
-                  <h1 className="mt-1 text-xl font-semibold text-[#F5E6D3]">{safeProfile.full_name || 'Explorer'}</h1>
-                  <p className="text-sm text-[#C4A882]">{userConfig?.subtitle || 'Your XP, badges, and settings live here.'}</p>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#8C7B63]">{t('profile_title')}</p>
+                  <h1 className="mt-1 text-xl font-semibold text-[#F5E6D3]">{safeProfile.full_name || t('explorer')}</h1>
+                  <p className="text-sm text-[#C4A882]">{userConfig?.subtitle || t('profile_subtitle')}</p>
                 </div>
               </div>
               <span className="rounded-full border border-[#C9A84C]/25 bg-[#C9A84C]/12 px-3 py-1 text-xs font-semibold text-[#F7D88C]">⚡ {safeProfile.total_xp} XP</span>
@@ -74,9 +72,9 @@ export default function ProfilePage() {
 
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                { label: 'Visited', value: safeProfile.monuments_visited.length, icon: MapPinned },
-                { label: 'Badges', value: safeProfile.badges.length, icon: BadgeCheck },
-                { label: 'Rank', value: '#24', icon: Trophy },
+                { label: t('visited_label'), value: safeProfile.monuments_visited.length, icon: MapPinned },
+                { label: t('badges_label'), value: safeProfile.badges.length, icon: BadgeCheck },
+                { label: t('rank_label'), value: '#24', icon: Trophy },
               ].map((item) => (
                 <div key={item.label} className="rounded-[18px] border border-white/10 bg-white/5 p-3">
                   <item.icon className="h-4 w-4 text-[#F7D88C]" />
@@ -91,7 +89,7 @@ export default function ProfilePage() {
         <AppCard>
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-[#8C7B63]">Current level</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-[#8C7B63]">{t('current_level')}</p>
               <h2 className="text-lg font-semibold text-[#F5E6D3]">{level.title}</h2>
             </div>
             <div className="rounded-full border border-[#C9A84C]/20 bg-[#C9A84C]/12 px-3 py-1 text-sm font-semibold text-[#F7D88C]">{progress}%</div>
@@ -101,22 +99,12 @@ export default function ProfilePage() {
           </div>
         </AppCard>
 
-        <section className="grid grid-cols-2 gap-2">
-          <button className="app-card flex items-center justify-between rounded-[20px] px-4 py-3 text-left" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            <div className="flex items-center gap-3">
-              <MoonStar className="h-5 w-5 text-[#F7D88C]" />
-              <div>
-                <p className="text-sm font-semibold text-[#F5E6D3]">Theme</p>
-                <p className="text-xs text-[#C4A882]">{theme === 'light' ? 'Light mode' : 'Dark mode'}</p>
-              </div>
-            </div>
-          </button>
-
+        <section className="grid grid-cols-1 gap-2">
           <button type="button" className="app-card flex items-center justify-between rounded-[20px] px-4 py-3 text-left" onClick={toggleLang}>
             <div className="flex items-center gap-3">
               <Globe className="h-5 w-5 text-[#F7D88C]" />
               <div>
-                <p className="text-sm font-semibold text-[#F5E6D3]">Language</p>
+                <p className="text-sm font-semibold text-[#F5E6D3]">{t('language_label')}</p>
                 <p className="text-xs text-[#C4A882]">{lang === 'en' ? 'English' : 'हिंदी'}</p>
               </div>
             </div>
@@ -125,16 +113,16 @@ export default function ProfilePage() {
 
         <AppCard>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#F5E6D3]">Mode</h2>
+            <h2 className="text-lg font-semibold text-[#F5E6D3]">{t('mode_title')}</h2>
             <button onClick={() => setUserType(userType === 'student' ? 'tourist' : 'student')} className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-[#F7D88C]">
-              Switch
+              {t('mode_switch')}
             </button>
           </div>
-          <p className="text-sm text-[#C4A882]">{userConfig?.subtitle || 'Toggle between learning and travel-focused guidance.'}</p>
+          <p className="text-sm text-[#C4A882]">{userConfig?.subtitle || t('mode_subtitle')}</p>
         </AppCard>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold text-[#F5E6D3]">Badges</h2>
+          <h2 className="text-lg font-semibold text-[#F5E6D3]">{t('badges_label')}</h2>
           {BADGES.map((badge) => {
             const earned = safeProfile.badges.includes(badge.id)
             return (
@@ -154,13 +142,13 @@ export default function ProfilePage() {
           <div className="flex items-center gap-3">
             <Flame className="h-5 w-5 text-[#F7D88C]" />
             <div>
-              <p className="font-semibold text-[#F5E6D3]">Offline-first UI</p>
-              <p className="text-sm text-[#C4A882]">Core screens stay usable with cached data and local state.</p>
+              <p className="font-semibold text-[#F5E6D3]">{t('offline_ui_title')}</p>
+              <p className="text-sm text-[#C4A882]">{t('offline_ui_desc')}</p>
             </div>
           </div>
           <div className="mt-4">
             <Button asChild className="w-full rounded-2xl bg-[#C9A84C] text-[#0E0916]">
-              <a href="/explore">Continue exploring</a>
+              <a href="/explore">{t('continue_exploring')}</a>
             </Button>
           </div>
         </AppCard>

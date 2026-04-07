@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/authContext'
 import { useUser } from '@/lib/userContext'
 import { useLang } from '@/lib/languageContext'
-import { Sparkles, Camera, Route, Trophy, ArrowRight, MessageCircle } from 'lucide-react'
+import { Sparkles, Camera, Route, Trophy, ArrowRight } from 'lucide-react'
 
 
 const nearbyMonuments = [
@@ -170,13 +170,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        <Link
-          href="/chat"
-          className="fixed bottom-[calc(124px+env(safe-area-inset-bottom))] right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[linear-gradient(135deg,#20193f,#0f1226)] text-[#F7D88C] shadow-[0_16px_36px_rgba(0,0,0,0.35)]"
-          aria-label="Open chat"
-        >
-          <MessageCircle className="h-5 w-5" />
-        </Link>
       </div>
     </AppShell>
   )
