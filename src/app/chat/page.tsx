@@ -4,7 +4,7 @@ import { useState } from "react";
 import { api } from "@/lib/apiClient";
 import { useAudioGuide } from "@/hooks/useAudioGuide";
 import { useVapi } from "@/hooks/useVapi";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { useLang } from "@/lib/languageContext";
 
@@ -17,9 +17,8 @@ export default function ChatPage() {
   const [monumentId, setMonumentId] = useState("taj-mahal");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
-  const { speak, stop } = useAudioGuide();
-  const { startCall, stopCall } = useVapi();
-  const toast = useToast();
+  const { speak, stopSpeaking } = useAudioGuide();
+  const { startCall, endCall } = useVapi();
   const { t, lang } = useLang();
 
   const ask = async () => {
@@ -40,7 +39,7 @@ export default function ChatPage() {
       const answer = res.data?.answer ?? res.data?.text ?? "No response available.";
       cache.set(key, { ts: Date.now(), answer });
       setMessages((m) => [...m, { role: "assistant", text: answer }]);
-      speak(answer, "en-IN");
+      speak(answer);
     } catch {
       toast.error("Chat service unavailable right now.");
     } finally {
@@ -106,10 +105,10 @@ export default function ChatPage() {
         <button className="min-h-[44px] rounded-xl bg-gold px-3 text-black" onClick={() => startCall()}>
           {t("call")}
         </button>
-        <button className="min-h-[44px] rounded-xl bg-rust px-3 text-black" onClick={() => stopCall()}>
+        <button className="min-h-[44px] rounded-xl bg-rust px-3 text-black" onClick={() => endCall()}>
           {t("end")}
         </button>
-        <button className="min-h-[44px] rounded-xl bg-white/10 px-3" onClick={stop}>
+        <button className="min-h-[44px] rounded-xl bg-white/10 px-3" onClick={stopSpeaking}>
           {t("stop")}
         </button>
       </div>
