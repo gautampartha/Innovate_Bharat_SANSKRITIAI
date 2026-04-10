@@ -1,23 +1,23 @@
-"use client"
-import { useLang } from "@/lib/languageContext"
+import { useUser } from "../../lib/userContext";
 
 export function MetricsRow() {
-  const { t } = useLang()
-  const metrics = [
-    { icon: "🏛️", label: t('monuments_label'), value: "15+" },
-    { icon: "🔮", label: t('groq_vision'), value: "" },
-    { icon: "🌍", label: t('sdg_label'), value: "" },
-    { icon: "⚡", label: t('under_2_sec'), value: "" },
-  ]
+  const { profile, badges } = useUser();
+  const unlocked = badges.filter((b) => b.unlocked).length;
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {metrics.map((metric, index) => (
-        <div key={index} className={`glass-card rounded-xl p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg animate-fade-in stagger-${index + 1}`}>
-          <span className="text-3xl mb-2 block">{metric.icon}</span>
-          <p className="text-[#C9A84C] font-bold text-lg">{metric.value || metric.label}</p>
-          {metric.value && <p className="text-[#C4A882] text-sm">{metric.label}</p>}
-        </div>
-      ))}
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="rounded-xl border border-white/10 bg-[var(--bg-card)]/70 p-4">
+        <p className="text-xs text-cream/70">Total XP</p>
+        <p className="text-2xl font-bold text-gold">{profile?.total_xp ?? 0}</p>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-[var(--bg-card)]/70 p-4">
+        <p className="text-xs text-cream/70">Monuments Visited</p>
+        <p className="text-2xl font-bold text-teal">{profile?.monuments_visited?.length ?? 0}</p>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-[var(--bg-card)]/70 p-4">
+        <p className="text-xs text-cream/70">Badges</p>
+        <p className="text-2xl font-bold text-rust">{unlocked}</p>
+      </div>
     </div>
-  )
+  );
 }

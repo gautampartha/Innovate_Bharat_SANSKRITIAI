@@ -1,71 +1,36 @@
-import axios from 'axios'
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://heritageai-backend.onrender.com'
+import axios from "axios";
 
 export const apiClient = axios.create({
-  baseURL: API,
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 60000,
-  headers: { 'Content-Type': 'application/json' }
-})
+});
 
-// Default user for demo
-export const DEFAULT_USER = 'demo_user'
-
-// All API functions
 export const api = {
-  // Monuments
-  getNearby: () =>
-    apiClient.get('/geo/nearby'),
+  nearby: () => apiClient.get("/geo/nearby"),
+  getNearby: () => apiClient.get("/geo/nearby"), // Alias
+  checkIn: (lat: number, lng: number, user_id: string) =>
+    apiClient.post("/geo/checkin", { lat, lng, user_id }),
+  askChat: (question: string, monument_id: string) =>
+    apiClient.post("/chat/ask", { question, monument_id }),
+  ask: (question: string, monument_id: string) =>
+    apiClient.post("/chat/ask", { question, monument_id }), // Alias
+  recognize: (image_b64: string, filename: string) =>
+    apiClient.post("/monument/recognize", { image_b64, filename }),
+  recognizeMonument: (image_b64: string, filename: string) =>
+    apiClient.post("/monument/recognize", { image_b64, filename }), // Alias
+  quizQuestions: (monument_id: string) =>
+    apiClient.get("/game/quiz/questions", { params: { monument_id } }),
+  huntClue: (user_id: string) =>
+    apiClient.get("/game/hunt/clue", { params: { user_id } }),
+  huntVerify: (user_id: string, answer_index: number, hunt_id: string) =>
+    apiClient.post("/game/hunt/verify", { user_id, answer_index, hunt_id }),
+  awardXP: (user_id: string, xp_delta: number, event_type: string) =>
+    apiClient.post("/game/xp", { user_id, xp_delta, event_type }),
+  leaderboard: () => apiClient.get("/game/leaderboard"),
+  itinerary: (monument_id: string, days: number) =>
+    apiClient.post("/tourism/itinerary", { monument_id, days }),
+  leadCapture: (payload: Record<string, unknown>) =>
+    apiClient.post("/leads/capture", payload),
+};
 
-  checkin: (lat: number, lng: number, userId = DEFAULT_USER) =>
-    apiClient.post('/geo/checkin', { lat, lng, user_id: userId }),
-
-  // Chat
-  askChat: (question: string, monumentId = '') =>
-    apiClient.post('/chat/ask', {
-      question, monument_id: monumentId
-    }),
-
-  // Recognition
-  recognize: (imageB64: string, filename = 'image.jpg', options?: Record<string, unknown>) =>
-    apiClient.post('/monument/recognize', {
-      image_b64: imageB64,
-      filename,
-      ...(options || {}),
-    }),
-
-  // Quiz
-  getQuestions: (monumentId = 'taj-mahal') =>
-    apiClient.get(`/game/quiz/questions?monument_id=${monumentId}`),
-
-  // Hunt
-  getHuntClue: (userId = DEFAULT_USER) =>
-    apiClient.get(`/game/hunt/clue?user_id=${userId}`),
-
-  verifyHunt: (userId = DEFAULT_USER, answerIndex: number, huntId = 'taj-mahal-1') =>
-    apiClient.post('/game/hunt/verify', {
-      user_id: userId,
-      answer_index: answerIndex,
-      hunt_id: huntId
-    }),
-
-  // XP
-  awardXP: (userId = DEFAULT_USER, xpDelta: number, eventType = '') =>
-    apiClient.post('/game/xp', {
-      user_id: userId,
-      xp_delta: xpDelta,
-      event_type: eventType
-    }),
-
-  // Leaderboard
-  getLeaderboard: () =>
-    apiClient.get('/game/leaderboard'),
-
-  // Itinerary
-  getItinerary: (monumentId: string, days = 3) =>
-    apiClient.post('/tourism/itinerary', {
-      monument_id: monumentId, days
-    }),
-}
-
-export default api
+export default api;

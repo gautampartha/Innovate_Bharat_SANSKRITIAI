@@ -1,5 +1,5 @@
 'use client'
-import { useUser, USER_TYPES } from '@/lib/userContext'
+import { useUser, USER_TYPES, UserType } from '@/lib/userContext'
 import { useAuth } from '@/lib/authContext'
 import { updateUserProfile } from '@/lib/authClient'
 import { useLang } from '@/lib/languageContext'
@@ -23,7 +23,7 @@ export function UserSelection() {
         <div style={{ color: 'rgba(201,168,76,0.35)', margin: '1rem 0', letterSpacing: '0.5em', fontSize: '1.1rem' }}>❖ ─── ✦ ─── ❖</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', width: '100%', maxWidth: '700px', marginBottom: '2rem' }}>
-        {Object.entries(USER_TYPES).map(([key, cfg]) => (
+        {(Object.entries(USER_TYPES) as [UserType, typeof USER_TYPES[UserType]][]).map(([key, cfg]) => (
           <div key={key} style={{ background: cfg.bg, border: `2px solid ${cfg.border}`, borderRadius: '20px', padding: '2.2rem 1.8rem', textAlign: 'center', cursor: 'pointer', transition: 'all 0.3s ease' }}
             onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = `0 16px 40px ${cfg.color}30` }}
             onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}>
@@ -35,7 +35,7 @@ export function UserSelection() {
               {key === 'student' ? t('student_subtitle') : t('tourist_subtitle')}
             </p>
             <div style={{ textAlign: 'left', marginBottom: '1.2rem' }}>
-              {cfg.content_focus.map((focus, i) => (
+              {(cfg.content_focus as readonly string[]).map((focus: string, i: number) => (
                 <div key={i} style={{ color: '#C4A882', fontSize: '0.83rem', padding: '3px 0' }}>✦ {focus}</div>
               ))}
             </div>
