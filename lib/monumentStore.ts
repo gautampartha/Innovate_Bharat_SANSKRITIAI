@@ -4,6 +4,8 @@ export interface StoredMonument {
   timestamp: number
 }
 
+export { monuments } from "../src/lib/monumentStore"
+
 export function saveMonument(id: string, name: string) {
   try {
     const data: StoredMonument = { id, name, timestamp: Date.now() }
