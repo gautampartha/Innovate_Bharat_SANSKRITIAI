@@ -1,4 +1,4 @@
-import { useUser } from "@/lib/userContext";
+import { useUser } from "../../lib/userContext";
 
 export function MetricsRow() {
   const { profile, badges } = useUser();

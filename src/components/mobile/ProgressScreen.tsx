@@ -5,7 +5,7 @@ import { TabSwitcher } from "@/components/mobile/TabSwitcher";
 import { SectionHeader } from "@/components/mobile/SectionHeader";
 import { MobileCard } from "@/components/mobile/MobileCard";
 import { api } from "@/lib/apiClient";
-import { useUser } from "@/lib/userContext";
+import { useUser } from "../../lib/userContext";
 
 const tiers = [
   { name: "Heritage Explorer", min: 0, max: 499 },
